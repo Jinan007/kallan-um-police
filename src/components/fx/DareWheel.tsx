@@ -187,6 +187,18 @@ export function DareWheel({ names, onClose }: { names: string; onClose: () => vo
             <motion.svg viewBox="0 0 200 200" className="block w-full drop-shadow-[0_14px_20px_rgb(0_0_0/0.7)]" style={{ rotate: rotation }}>
               <WheelDisc dares={dares} />
             </motion.svg>
+            {/* The hub is the spin button. It does not rotate with the wheel. */}
+            <button
+              type="button"
+              onClick={spin}
+              disabled={spinning}
+              aria-label={result === null ? S.end.spin : S.end.respin}
+              onPointerDown={() => !spinning && haptic()}
+              className="absolute left-1/2 top-1/2 flex h-[27%] w-[27%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-[#24160a] font-display text-base font-bold leading-none text-[#5a3d0a] shadow-[0_3px_6px_rgb(0_0_0/0.6),inset_0_2px_3px_rgb(255_255_255/0.7)] transition-transform duration-100 active:scale-90 disabled:opacity-70"
+              style={{ background: "radial-gradient(circle at 35% 30%, #fffbe8, #d9be6a 70%, #a98a3a)" }}
+            >
+              {spinning ? "..." : result === null ? S.end.spin : "AGAIN"}
+            </button>
           </div>
 
           <div className="flex min-h-28 w-full max-w-sm flex-col items-center justify-center">
@@ -207,7 +219,7 @@ export function DareWheel({ names, onClose }: { names: string; onClose: () => vo
           </div>
 
           <div className="flex w-full max-w-sm flex-col gap-2">
-            <Button disabled={spinning} onClick={spin}>{result === null ? S.end.spin : S.end.respin}</Button>
+            <p className="font-ml text-sm opacity-80">{S.end.tapHub}</p>
             <div className="flex gap-2">
               <Button variant="ghost" className="flex-1" disabled={spinning} onClick={() => setEditing(true)}>{S.end.editWheel}</Button>
               <Button variant="ghost" className="flex-1" disabled={spinning} onClick={onClose}>{S.end.close}</Button>

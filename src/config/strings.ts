@@ -109,6 +109,7 @@ export const S = {
     minDares: (n: number) => `The wheel needs at least ${n} dares`,
     saveDares: "Save wheel",
     cancel: "Cancel",
+    tapHub: "Tap the middle of the wheel to spin",
   },
 
   roles: {

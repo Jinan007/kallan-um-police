@@ -115,7 +115,7 @@ export function AccusePhase({ s, send }: P) {
       {target !== null && (
         <motion.div
           className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6"
-          style={{ background: "radial-gradient(circle at 50% 45%, rgb(255 244 200/0.28) 0, rgb(0 0 0/0.88) 55%)" }}
+          style={{ background: "radial-gradient(circle at 50% 45%, #6b4a22 0, #1a0f06 45%, #060302 80%)" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
@@ -137,7 +137,7 @@ export function AccusePhase({ s, send }: P) {
           >
             <p className="font-display text-4xl font-bold">{s.players[target]}</p>
           </motion.div>
-          <p className="font-ml text-xl text-paper">{S.accuse.suspense}</p>
+          <p className="mt-10 font-ml text-xl text-paper">{S.accuse.suspense}</p>
           {/* TODO(P3): drumroll sound */}
         </motion.div>
       )}
@@ -180,8 +180,13 @@ export function VerdictPhase({ s, send }: P) {
                 transition={{ delay: st.listDelaySec + i * st.rowStaggerSec, duration: 0.3, ease: "easeOut" }}
               >
                 <span>{name}</span>
-                <span className={`font-bold ${roles[i] === "kallan" ? "text-stamp" : ""}`}>
-                  {roles[i] ? S.roles[roles[i]!] : "-"}
+                <span className="flex items-baseline gap-3">
+                  <span className={`font-bold ${roles[i] === "kallan" ? "text-stamp" : ""}`}>
+                    {roles[i] ? S.roles[roles[i]!] : "-"}
+                  </span>
+                  <span className={`w-14 text-right font-display ${s.deltas[i] < 0 ? "text-stamp" : ""}`}>
+                    {s.deltas[i] > 0 ? `+${s.deltas[i]}` : s.deltas[i]}
+                  </span>
                 </span>
               </motion.li>
             ))}
@@ -198,7 +203,7 @@ export function ScorePhase({ s, send }: P) {
   const last = s.round >= s.totalRounds;
   const [confirming, setConfirming] = useState(false);
   return (
-    <Screen title={S.score.heading(s.round)}>
+    <Screen tone="table" title={S.score.heading(s.round)}>
       {/* TODO(P4): SVG pen-stroke handwriting onto the ruled scoreboard */}
       <ScoreSheet s={s} />
       <Button onClick={() => send({ type: "CONTINUE" })}>{last ? S.score.finish : S.score.nextRound}</Button>
@@ -219,7 +224,7 @@ export function ScorePhase({ s, send }: P) {
 
 export function IntervalPhase({ onNext }: { onNext: () => void }) {
   return (
-    <Screen>
+    <Screen tone="table">
       {/* TODO(P4): projector-style ഇടവേള title card */}
       <Paper className="mt-10 text-center">
         <h1 className="font-ml text-5xl font-bold">{S.interval.heading}</h1>
@@ -236,7 +241,7 @@ export function EndPhase({ s, send }: P) {
   const names = (ids: number[]) => ids.map((i) => s.players[i]).join(", ");
   const losers = names(lastPlaceIds(s.totals));
   return (
-    <Screen title={S.end.heading}>
+    <Screen tone="table" title={S.end.heading}>
       <Celebration names={names(winnerIds(s.totals))} />
       <Paper>
         <p className="font-ml text-lg">{S.end.last(losers)}</p>
@@ -250,4 +255,5 @@ export function EndPhase({ s, send }: P) {
     </Screen>
   );
 }
+
 

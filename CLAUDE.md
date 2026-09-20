@@ -54,3 +54,9 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - Layers use `initial={false}` so nothing flashes at its start state when the table mounts mid-game.
 - **Dare wheel**: `game/dares.ts` (sanitize/load/save, tested), editable in-game (label max 10 chars, 3-14 dares, saved to localStorage `kallan-um-police:dares:v1`, reset to defaults). Wheel drawing is `WheelDisc` (rim lights, gloss, hub); defaults in `config/dares.ts`.
 - Testing note: the browser pane throttles animations when hidden (`document.visibilityState === "hidden"`); front the tab before judging motion.
+
+## Round 3 fixes (owner)
+- Root cause of invisible text (role points, suspense name, "Winner"): screens on the table use light text, and text on paper inherited it. `.paper { color: ink }` in `index.css` fixes it everywhere. Any new paper-like surface must use the `paper` class.
+- SCORE, INTERVAL and END also sit on the table (`TABLE_PHASES`); `Table` is keyed by round so a new round drops the chits in again.
+- Verdict list shows each player's role and the points earned that round.
+- Dare wheel: the hub is the spin button (round, 27% of the wheel, does not rotate); the separate Spin button is gone.

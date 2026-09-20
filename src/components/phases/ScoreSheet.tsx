@@ -12,12 +12,12 @@ const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 export function ScoreSheet({ s }: { s: GameState }) {
   return (
     <Paper className="overflow-x-auto p-0">
-      <table className="w-full min-w-max border-collapse text-center text-base [&_td]:h-7 [&_td]:px-2 [&_th]:px-2">
+      <table className="w-full min-w-max border-collapse text-center text-sm [&_td]:h-7 [&_td]:px-1.5 [&_th]:px-1.5">
         <thead>
           <tr className="font-display">
             <th className="text-left">{S.score.round}</th>
             {s.players.map((name, i) => (
-              <th key={i} className="max-w-20 truncate">{name}</th>
+              <th key={i} className="max-w-14 truncate">{name}</th>
             ))}
           </tr>
         </thead>

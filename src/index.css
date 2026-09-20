@@ -83,3 +83,6 @@ input { -webkit-user-select: text; user-select: text; font-size: 16px; }
 /* Screens laid over the table: let taps fall through to the chits except on real controls. */
 .scrim-dim { background: linear-gradient(180deg, rgb(10 5 2 / 0.72), rgb(10 5 2 / 0.4) 45%, rgb(10 5 2 / 0.72)); }
 .scrim-light { background: linear-gradient(180deg, rgb(10 5 2 / 0.7), transparent 22%); }
+
+/* Text on paper is always ink, even when the surrounding screen uses light text. */
+.paper { color: var(--color-ink); }
