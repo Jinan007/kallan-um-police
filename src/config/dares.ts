@@ -12,7 +12,7 @@ export const DARES: readonly Dare[] = [
   { short: "Chaya", text: "Make tea for everyone, or pay for the next round of snacks." },
   { short: "Squats", text: "Do 10 squats while everyone counts in Malayalam." },
   { short: "Villain", text: "Deliver a villain's dramatic laugh and monologue for 20 seconds." },
-  { short: "Backwards", text: "Say the alphabet backwards without a single mistake." },
+  { short: "Reverse", text: "Say the alphabet backwards without a single mistake." },
   { short: "Manglish", text: "Speak only in Manglish for the next 5 minutes." },
   { short: "Dance", text: "Dance for 30 seconds to whatever the group hums." },
   { short: "Heroine", text: "Act out an over-the-top sad film scene. Tears optional." },

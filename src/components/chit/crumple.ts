@@ -1,4 +1,4 @@
-import { mulberry32 } from "./slots";
+﻿import { mulberry32 } from "./slots";
 
 const cache = new Map<string, string>();
 
@@ -74,7 +74,7 @@ function crumpleDetail(
   }
 }
 
-/** A crumpled paper ball with a soft shadow baked in. Drawn once per seed, then it is just an image. */
+/** A crumpled paper ball (no shadow: the table casts its own). Drawn once per seed, then it is just an image. */
 export function ballTexture(seed: number, size = 192): string {
   const key = `ball:${seed}:${size}`;
   const hit = cache.get(key);
@@ -84,27 +84,18 @@ export function ballTexture(seed: number, size = 192): string {
   const { c, ctx } = makeCanvas(size, size);
   const cx = size / 2;
   const cy = size / 2 - size * 0.03;
-  const R = size * 0.34;
-
-  blobPath(ctx, cx, cy, R, mulberry32(seed + 1));
-  ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,0.55)";
-  ctx.shadowBlur = size * 0.07;
-  ctx.shadowOffsetY = size * 0.05;
-  ctx.fillStyle = "#efe4c4";
-  ctx.fill();
-  ctx.restore();
+  const R = size * 0.4;
 
   blobPath(ctx, cx, cy, R, mulberry32(seed + 1));
   ctx.save();
   ctx.clip();
   const g = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R * 1.1);
-  g.addColorStop(0, "#fffaf0");
-  g.addColorStop(0.55, "#eadfbd");
-  g.addColorStop(1, "#a89870");
+  g.addColorStop(0, "#fffdf5");
+  g.addColorStop(0.5, "#e6d9b4");
+  g.addColorStop(1, "#8f7f56");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
-  crumpleDetail(ctx, size, size, rand, 34, 26, 1);
+  crumpleDetail(ctx, size, size, rand, 46, 30, 1.7);
   // a faint notebook rule showing through: the chit was torn from a notebook
   ctx.strokeStyle = "rgba(90,130,190,0.28)";
   ctx.lineWidth = 1;
@@ -133,3 +124,4 @@ export function creaseTexture(seed: number, w = 320, h = 320): string {
   cache.set(key, url);
   return url;
 }
+

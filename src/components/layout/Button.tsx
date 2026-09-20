@@ -22,7 +22,8 @@ export function Button({ variant = "primary", className = "", onPointerDown, ...
         if (!rest.disabled) haptic();
         onPointerDown?.(e);
       }}
-      className={`min-h-12 rounded-xl px-5 py-2 font-display text-lg font-bold transition-transform duration-100 active:scale-95 active:translate-y-0.5 disabled:opacity-40 ${styles[variant]} ${className}`}
+      className={`pointer-events-auto min-h-12 rounded-xl px-5 py-2 font-display text-lg font-bold transition-transform duration-100 active:scale-95 active:translate-y-0.5 disabled:opacity-40 ${styles[variant]} ${className}`}
     />
   );
 }
+

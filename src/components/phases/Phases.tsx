@@ -8,7 +8,6 @@ import type { GameState } from "../../game/reducer";
 import { winnerIds, lastPlaceIds } from "../../game/scoring";
 import { haptic, useHold } from "../../hooks/useHold";
 import { CrumpleOpen } from "../chit/CrumpleOpen";
-import { Table } from "../chit/Table";
 import { Badge } from "../fx/Badge";
 import { Celebration } from "../fx/Celebration";
 import { DareWheel } from "../fx/DareWheel";
@@ -23,49 +22,19 @@ interface Send {
 }
 type P = { s: GameState } & Send;
 
-/** Seed for chit placement: same round and player count always lands the same way. */
-const tableSeed = (s: GameState) => s.round * 100 + s.players.length;
-
-export function ShufflePhase({ s, send }: P) {
+/** The table itself is mounted by App; these phases only add a layer of text on top of it. */
+export function ShufflePhase({ s }: { s: GameState }) {
   return (
-    <Screen tone="table" title={S.shuffle.heading(s.round, s.totalRounds)}>
-      <p className="font-ml">{S.shuffle.body}</p>
-      <Table
-        count={s.players.length}
-        seed={tableSeed(s)}
-        owners={s.owners}
-        mode="shuffle"
-        onShuffleDone={() => send({ type: "SHUFFLE_DONE" })}
-      />
+    <Screen tone="table" scrim="light" title={S.shuffle.heading(s.round, s.totalRounds)}>
       {/* TODO(P3): paper crinkle and chit toss sounds */}
     </Screen>
   );
 }
 
-export function PickPhase({ s, send }: P) {
-  const [ready, setReady] = useState(false);
-  const name = s.players[s.pickIdx];
-
-  if (!ready) {
-    return (
-      <Screen>
-        <Paper className="mt-8 text-center">
-          <h1 className="font-display text-3xl font-bold">{S.pick.cover(name)}</h1>
-          <p className="mt-2 font-ml">{S.pick.coverHint}</p>
-        </Paper>
-        <Button onClick={() => setReady(true)}>{S.pick.ready}</Button>
-      </Screen>
-    );
-  }
+export function PickPhase({ s }: { s: GameState }) {
   return (
-    <Screen tone="table" title={S.pick.chooseChit(name)}>
-      <Table
-        count={s.players.length}
-        seed={tableSeed(s)}
-        owners={s.owners}
-        mode="pick"
-        onPick={(slot) => send({ type: "TAP_CHIT", slot })}
-      />
+    <Screen tone="table" scrim="light" title={S.pick.chooseChit(s.players[s.pickIdx])}>
+      <span className="sr-only">{S.pick.hint}</span>
     </Screen>
   );
 }
@@ -84,8 +53,8 @@ export function RevealPhase({ s, send }: P) {
     </div>
   );
   return (
-    <Screen title={s.players[s.pickIdx]}>
-      <div {...bind} className="touch-none rounded-lg py-2" style={{ WebkitTouchCallout: "none" }}>
+    <Screen tone="table" title={s.players[s.pickIdx]}>
+      <div {...bind} className="pointer-events-auto touch-none rounded-lg py-2" style={{ WebkitTouchCallout: "none" }}>
         <CrumpleOpen open={held} content={content} seed={s.round * 31 + s.pickedSlot! * 7 + s.pickIdx} />
       </div>
       <p className="text-center font-display text-lg font-bold">
@@ -100,7 +69,7 @@ export function PolicePhase({ s, send }: P) {
   const reduced = useReducedMotion();
   return (
     <Shake at={MOTION.policeBadge.shakeDelaySec}>
-      <Screen title={S.policeCall.heading}>
+      <Screen tone="table" title={S.policeCall.heading}>
         <Paper className="pb-6 pt-6 text-center">
           <Badge label="POLICE" />
           <motion.p
@@ -131,7 +100,7 @@ export function AccusePhase({ s, send }: P) {
   }, [target, send]);
 
   return (
-    <Screen title={S.accuse.heading(s.players[police])}>
+    <Screen tone="table" title={S.accuse.heading(s.players[police])}>
       <p className="font-ml">{S.accuse.hint}</p>
       <div className="flex flex-col gap-3">
         {s.players.map((name, id) =>
@@ -190,7 +159,7 @@ export function VerdictPhase({ s, send }: P) {
   const endAt = st.listDelaySec + s.players.length * st.rowStaggerSec + 0.3;
   return (
     <Shake at={st.landSec * 0.65}>
-      <Screen>
+      <Screen tone="table">
         <Paper className="pb-5 pt-6 text-center">
           <Stamp text={s.correct ? S.verdict.caught : S.verdict.wrong} tone={s.correct ? "blue" : "red"} />
           <motion.p className="mt-4 font-ml text-lg" {...fade(st.thiefDelaySec)}>
@@ -281,3 +250,4 @@ export function EndPhase({ s, send }: P) {
     </Screen>
   );
 }
+

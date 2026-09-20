@@ -45,3 +45,12 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - Chits are crumpled paper balls (`chit/crumple.ts` draws them on a canvas once per seed, cached as data URLs). Reveal = `CrumpleOpen.tsx`: ball swells and fades, wrinkled sheet grows with a 3D wobble, crease overlay relaxes, text fades in last. Replaces the nested-strip scroll (`ChitUnroll`, deleted).
 - Chits are draggable while picking (`Table.tsx`, own pointer handling on motion values; 8px threshold separates tap from drag; vertical drag is divided by cos(tilt) to compensate for the tilted plane). Dragged positions persist for the round in module state `dragged`.
 - End screen: `fx/Celebration.tsx` (trophy spring, rotating rays, sparkles, canvas-confetti loaded on demand) and `fx/DareWheel.tsx` (last place spins; winning wedge chosen first, spin aimed so it stops under the top pointer). Dares live in `config/dares.ts`.
+
+## P2 feedback round 2 (owner)
+- **No cover page.** "Phone X-nu kodukku" is gone; the title "<name>, pick a chit" is the hand-off.
+- **Persistent table.** `App` mounts `Table` once behind SHUFFLE..VERDICT (`TABLE_PHASES`). Phases render `Screen tone="table"`: a fixed, `pointer-events-none` translucent scrim (`scrim-light` on pick, `scrim-dim` elsewhere) so the table and the remaining balls stay visible; controls opt back in with `pointer-events-auto` (Button, Paper, hold area).
+- **Per-turn reshuffle.** Each new pick turn (pickIdx > 0) plays gather -> shake -> scatter (`MOTION.turn`); new positions come from `slotSeed` (changed only at the scatter step so nothing jumps early). Dragged positions therefore last one turn.
+- **More 3D.** Deeper perspective + tilt (32deg), fog toward the far end, a front edge folded down for thickness, plank grain. Balls are counter-tilted (`rotateX(-tilt)` around their base) so they stand up, with a flat contact shadow. Ball textures have more facet contrast and no baked shadow.
+- Layers use `initial={false}` so nothing flashes at its start state when the table mounts mid-game.
+- **Dare wheel**: `game/dares.ts` (sanitize/load/save, tested), editable in-game (label max 10 chars, 3-14 dares, saved to localStorage `kallan-um-police:dares:v1`, reset to defaults). Wheel drawing is `WheelDisc` (rim lights, gloss, hub); defaults in `config/dares.ts`.
+- Testing note: the browser pane throttles animations when hidden (`document.visibilityState === "hidden"`); front the tab before judging motion.

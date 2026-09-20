@@ -30,9 +30,7 @@ export const S = {
   },
 
   pick: {
-    cover: (name: string) => `Phone ${name}-nu kodukku`,
-    coverHint: "Everyone else, no peeking! Nokkaruthu!",
-    ready: "I have the phone",
+    hint: "Drag the chits around, tap one to pick it.",
     chooseChit: (name: string) => `${name}, pick a chit`,
   },
 
@@ -100,6 +98,17 @@ export const S = {
     close: "Done",
     respin: "Spin again",
     winnerLabel: "Winner",
+    editWheel: "Edit wheel",
+    editHeading: "Edit the wheel",
+    editHint: "Short label goes on the wheel. The dare is what they have to do.",
+    labelPlaceholder: "Label",
+    darePlaceholder: "What must they do?",
+    addDare: "Add a dare",
+    removeDare: "Remove dare",
+    resetDares: "Reset to default",
+    minDares: (n: number) => `The wheel needs at least ${n} dares`,
+    saveDares: "Save wheel",
+    cancel: "Cancel",
   },
 
   roles: {
@@ -121,5 +130,7 @@ export const S = {
     unmute: "Sound on",
   },
 } as const;
+
+
 
 
