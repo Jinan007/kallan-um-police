@@ -75,3 +75,6 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - **Memes**: images live in `public/memes/<event>/`; `scripts/build-memes.mjs` (runs as `predev`/`prebuild`) writes `public/memes/manifest.json`; `memes/memes.ts` picks one at random per mount and preloads for the next phase. `fx/MemeFrame.tsx` = polaroid with mount corners + torn caption; styled placeholder if a folder is empty. Events: police_reveal (police call), caught (verdict, right), wrong_accuse + escaped (verdict, wrong: two frames), king_reveal (winner), last_place (loser).
 - `unused-assets/theif.jpg` is deliberately not wired in (see chat: real person shown as a thief).
 - **Audio** additions: crinkle (chit opens/closes), whirr (interval), generative BGM (drone + raga plucks with echo) or `/sfx/bgm.mp3` if present; music pauses when the tab is hidden. File names are listed in `public/sfx/README.txt`.
+
+## Update: no meme images (owner)
+- All meme photos were removed from the repo (they showed real people). `MemeFrame` now shows an old-film title card (icon + caption, no photo) when an event folder has no image. Adding your own image to `public/memes/<event>/` still works and is used automatically. `theif.jpg` is gone too. Note: the deleted photos still exist in earlier git commits.

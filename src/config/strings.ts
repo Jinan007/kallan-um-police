@@ -132,7 +132,6 @@ export const S = {
     wrong_accuse: "Wrong guess, sir!",
     king_reveal: "All hail the king!",
     last_place: "Better luck next time",
-    placeholder: "Meme photo goes here",
   },
 
   common: {
