@@ -29,3 +29,11 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - `RESET` action (also used by PLAY_AGAIN) is offered on every SCORE screen behind a confirm; it keeps names and settings.
 - Bug fixed: `Paper` dropped event props, so press-and-hold never fired and roles never showed.
 - Still P2: 3D scatter / pick / unroll. Still P3: memes.
+
+## P2 (animations) - done
+- All timings/sizes in `src/config/motion.ts`. Chit placement is a seeded jittered grid (`components/chit/slots.ts`), so it is stable across re-renders/refresh.
+- `Table.tsx`: tilted wooden plane (CSS perspective + rotateX). Shuffle stages appear -> roll -> shake -> scatter driven by timeouts; chits move with x/y/rotate/opacity only. Tap lifts the chit (z + scale) 260ms, then TAP_CHIT.
+- `ChitUnroll.tsx`: 5 nested strips, each hinged at its top edge (real scroll unroll). Folded strips accumulate rotation and would face the viewer, so each face fades out with opacity (on the face only; opacity on a strip would flatten the 3D chain). Starts folded so the role never flashes.
+- `fx/`: Badge (slam), Stamp (verdict), Shake (screen shake). Accuse = fixed spotlight overlay + 1.5s jitter, then ACCUSE dispatch.
+- Reduced motion: durations go to 0 / shake skipped.
+- Sound hooks are `TODO(P3)` comments in Phases.tsx.

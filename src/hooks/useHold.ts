@@ -19,7 +19,11 @@ export function useHold() {
 
   const start = useCallback((e: React.PointerEvent) => {
     pointer.current = e.pointerId;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* not an active pointer (e.g. synthetic event): holding still works without capture */
+    }
     haptic(8);
     setHeld(true);
   }, []);
