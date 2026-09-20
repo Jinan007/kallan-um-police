@@ -116,3 +116,7 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - Favicon (`public/favicon.svg`), web manifest, description/OG/iOS meta in `index.html`. No PNG app icons yet (iOS home-screen icon would need a PNG).
 - Global `:focus-visible` ring. README rewritten with run/deploy/rules/structure.
 - Known gaps: not tested on a real phone by me; no PNG icons; canvas-confetti is loaded on demand but Motion + Howler are in the main bundle.
+
+## App icons (PNG)
+- Sources are vector: `public/favicon.svg` (rounded, transparent corners), `public/icons/maskable.svg` (full-bleed, art kept in the middle 70% for Android masks) and `public/icons/apple.svg` (full-bleed, no transparency, for iOS). The PNGs in `public/icons/` (192, 512, maskable 512, apple-touch 180) were rendered from them with a browser canvas, since the project has no image library. To change the artwork: edit the SVGs, render each to a canvas at the size in its file name, and save the PNGs over the old ones.
+- `manifest.webmanifest` lists the PNGs (`any` and `maskable` as separate entries) and `index.html` links the apple-touch icon.
