@@ -90,3 +90,6 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - **End card** (`EndCard`): ശുഭം stamps in from large when scrolled into view, then a pen-drawn flourish and "THE END". Note: `whileInView` uses `amount: 0.1` because the scaled-up lettering is clipped by the card and never reached 60% visible.
 - Screen titles have `px-12` so they never sit under the top-right buttons. Score heading is now "Round N score".
 - All planned phases (P1-P4) are done. Left: P5 polish only if wanted, README/deploy checks.
+
+## Update: no background music (owner)
+- Background music removed entirely (generative tune, `/sfx/bgm.mp3` support, and the tab-hidden suspend hook that only served it). Sound effects and the mute toggle are unchanged. This supersedes the music notes in the P3 and P4 sections above.

@@ -10,5 +10,4 @@ so the game always has audio. Use .mp3 with exactly these names:
   win.mp3       winner fanfare and applause (about 3 s)
   spin.mp3      wheel launch whoosh (about 1 s)
   tick.mp3      one click of the wheel's pointer (very short; played many times per spin)
-  bgm.mp3       soft background music, loops
   pen.mp3       pen scratching on paper (about 0.6 s, played once per written number)

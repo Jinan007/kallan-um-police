@@ -20,7 +20,6 @@ const FILES: Record<SfxName, string> = {
   tick: "/sfx/tick.mp3",
   pen: "/sfx/pen.mp3",
 };
-const BGM_FILE = "/sfx/bgm.mp3";
 
 const MUTE_KEY = "kallan-um-police:muted";
 
@@ -56,7 +55,6 @@ export function setMuted(next: boolean): void {
   }
   if (master) master.gain.value = next ? 0 : 1;
   Object.values(howls).forEach((h) => h?.mute(next));
-  bgmFile?.mute(next);
   listeners.forEach((f) => f());
 }
 
@@ -75,160 +73,10 @@ function audio(): AudioContext | null {
   return ctx;
 }
 
-// ---------- background music ----------
-// A cheerful, bouncy tune, generated live: a four-chord loop (D - A - Bm - G) at 112 bpm, a
-// plucked marimba-style melody wandering over the D major pentatonic scale (every note sounds
-// good over every chord), a bouncy bass, soft chord pads, a shaker and a light thump on the beat,
-// with a little echo. If /sfx/bgm.mp3 exists it plays that on loop instead.
-
-const BPM = 112;
-const STEP = 60 / BPM / 2; // one eighth note, in seconds
-const midi = (m: number) => 440 * 2 ** ((m - 69) / 12);
-// D major pentatonic (D E F# A B) from D4 to D6, as MIDI numbers
-const PENT = [62, 64, 66, 69, 71, 74, 76, 78, 81, 83, 86];
-// chord loop, one bar each: bass root, triad for the pad, and which melody notes are "home" over it
-const BARS = [
-  { root: 38, triad: [62, 66, 69], home: [62, 66, 69, 74, 78, 81] }, // D
-  { root: 45, triad: [61, 64, 69], home: [64, 69, 76, 81, 71] },     // A
-  { root: 47, triad: [62, 66, 71], home: [66, 71, 74, 78, 83] },     // Bm
-  { root: 43, triad: [62, 67, 71], home: [62, 71, 74, 83, 69] },     // G
-];
-let bgmStarted = false;
-let bgmFile: Howl | null = null;
-
-function startGenerativeBgm() {
-  const c = ctx!;
-  const bus = c.createGain();
-  bus.gain.value = 0.55; // keeps the music under the effects
-  bus.connect(master!);
-
-  // a short echo for sparkle
-  const delay = c.createDelay(1);
-  delay.delayTime.value = STEP * 3; // dotted-eighth echo: a classic bouncy feel
-  const fb = c.createGain();
-  fb.gain.value = 0.3;
-  const damp = c.createBiquadFilter();
-  damp.type = "lowpass";
-  damp.frequency.value = 2600;
-  delay.connect(damp).connect(fb).connect(delay);
-  damp.connect(bus);
-
-  /** One plucked note: a sine plus a quiet octave-up partial that dies fast (marimba-like). */
-  const pluck = (t: number, freq: number, level: number, dur: number, send = true) => {
-    for (const [mult, lv, d] of [[1, level, dur], [2, level * 0.35, dur * 0.4], [4, level * 0.1, dur * 0.2]] as const) {
-      const o = c.createOscillator();
-      o.frequency.value = freq * mult;
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(lv, t + 0.006);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-      o.connect(g);
-      g.connect(bus);
-      if (send) g.connect(delay);
-      o.start(t);
-      o.stop(t + d + 0.05);
-    }
-  };
-  const pad = (t: number, notes: number[], dur: number) => {
-    for (const n of notes) {
-      const o = c.createOscillator();
-      o.type = "triangle";
-      o.frequency.value = midi(n);
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(0.022, t + 0.08);
-      g.gain.setValueAtTime(0.022, t + dur - 0.25);
-      g.gain.linearRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(bus);
-      o.start(t);
-      o.stop(t + dur + 0.05);
-    }
-  };
-
-  let step = 0;
-  let melody = 6; // index into PENT
-  let next = c.currentTime + 0.4;
-
-  const playStep = (t: number, n: number) => {
-    const bar = BARS[Math.floor(n / 8) % 4];
-    const pos = n % 8;
-
-    if (pos === 0) pad(t, bar.triad, STEP * 8);
-
-    // bouncy bass: root on 1, fifth up on the "and" of 2, root again on 3, octave on the "and" of 4
-    if (pos === 0 || pos === 4) pluck(t, midi(bar.root), 0.2, 0.34, false);
-    if (pos === 3) pluck(t, midi(bar.root + 7), 0.12, 0.22, false);
-    if (pos === 7) pluck(t, midi(bar.root + 12), 0.1, 0.22, false);
-
-    // percussion: a soft thump on 1 and 3, a shaker on every eighth (louder off the beat)
-    if (pos === 0 || pos === 4) {
-      const o = c.createOscillator();
-      o.frequency.setValueAtTime(120, t);
-      o.frequency.exponentialRampToValueAtTime(48, t + 0.1);
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.16, t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-      o.connect(g).connect(bus);
-      o.start(t);
-      o.stop(t + 0.15);
-    }
-    burst(bus, t, 0.03, 7500, 1.5, pos % 2 ? 0.045 : 0.025);
-
-    // melody: home notes on the strong beats, stepwise wandering in between, a few rests
-    const strong = pos === 0 || pos === 4 || pos === 2 || pos === 6;
-    if (Math.random() < (strong ? 0.85 : 0.6)) {
-      if (strong) {
-        const homeIdx = PENT.map((m, i) => [m, i] as const).filter(([m]) => bar.home.includes(m)).map(([, i]) => i);
-        // move to the nearest home note, so the tune leans into each chord
-        melody = homeIdx.reduce((best, i) => (Math.abs(i - melody) < Math.abs(best - melody) ? i : best), homeIdx[0]);
-      } else {
-        melody += [-2, -1, -1, 1, 1, 2][Math.floor(Math.random() * 6)];
-      }
-      melody = Math.max(2, Math.min(PENT.length - 1, melody));
-      pluck(t, midi(PENT[melody]), strong ? 0.16 : 0.12, 0.5);
-    }
-  };
-
-  window.setInterval(() => {
-    while (next < c.currentTime + 0.6) {
-      playStep(next, step++);
-      next += STEP;
-    }
-  }, 200);
-}
-
-/** Start the background music (once). Safe to call repeatedly. */
-function startBgm() {
-  if (bgmStarted || !audio()) return;
-  bgmStarted = true;
-  fetch(BGM_FILE, { method: "HEAD" })
-    .then((r) => {
-      if (r.ok && (r.headers.get("content-type") ?? "").startsWith("audio")) {
-        bgmFile = new Howl({ src: [BGM_FILE], loop: true, volume: 0.35, mute: muted });
-        bgmFile.play();
-      } else {
-        startGenerativeBgm();
-      }
-    })
-    .catch(startGenerativeBgm);
-  // save battery: silence everything while the tab is in the background
-  document.addEventListener("visibilitychange", () => {
-    if (!ctx) return;
-    if (document.hidden) {
-      void ctx.suspend();
-      bgmFile?.pause();
-    } else {
-      void ctx.resume();
-      bgmFile?.play();
-    }
-  });
-}
-
-/** Call from the first user gesture. Starts the audio engine, the music, and looks for supplied files. */
+/** Call from the first user gesture. Starts the audio engine and looks for supplied files. */
 export function unlock(): void {
   const c = audio();
   if (c && c.state === "suspended") void c.resume();
-  startBgm();
   if (probed) return;
   probed = true;
   (Object.keys(FILES) as SfxName[]).forEach((name) => {
