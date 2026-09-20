@@ -29,11 +29,11 @@ describe("history and reset", () => {
 
   it("RESET works from any phase and keeps names and settings", () => {
     const mid = run(
-      { type: "START", players: NAMES, totalRounds: 3, mode: "PENALTY", chits: CHITS },
+      { type: "START", players: NAMES, totalRounds: 3, mode: "STEAL", chits: CHITS },
       ...playRound(),
     );
     const s = reducer(mid, { type: "RESET" });
-    expect(s).toMatchObject({ phase: "SETUP", players: NAMES, totalRounds: 3, mode: "PENALTY", totals: [], history: [] });
+    expect(s).toMatchObject({ phase: "SETUP", players: NAMES, totalRounds: 3, mode: "STEAL", totals: [], history: [] });
   });
 });
 

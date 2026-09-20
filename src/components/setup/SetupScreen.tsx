@@ -7,6 +7,8 @@ import { DareEditorDialog } from "../fx/DareWheel";
 import { Button } from "../layout/Button";
 import { Paper, Screen } from "../layout/Screen";
 
+const MODES = Object.keys(WRONG_GUESS_MODES) as WrongGuessMode[];
+
 interface Props {
   initialNames: string[];
   initialRounds: number;
@@ -75,22 +77,27 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
 
       <Paper>
         <h2 className="font-display text-xl font-bold">{S.setup.modeLabel}</h2>
-        <div role="radiogroup" className="mt-2 flex flex-col gap-2">
-          {(Object.keys(WRONG_GUESS_MODES) as WrongGuessMode[]).map((m) => (
-            <button
-              key={m}
-              role="radio"
-              aria-checked={mode === m}
-              onClick={() => setMode(m)}
-              className={`min-h-12 rounded-lg border-2 px-3 py-2 text-center transition-transform duration-100 active:scale-[0.98] ${
-                mode === m ? "border-ink bg-ink text-paper" : "border-ink/40 bg-white/50"
-              }`}
-            >
-              <span className="font-display text-lg font-bold">{S.modes[m].title}</span>
-              <span className="block text-sm">{S.modes[m].desc}</span>
-            </button>
-          ))}
-        </div>
+        {MODES.length > 1 ? (
+          <div role="radiogroup" className="mt-2 flex flex-col gap-2">
+            {MODES.map((m) => (
+              <button
+                key={m}
+                role="radio"
+                aria-checked={mode === m}
+                onClick={() => setMode(m)}
+                className={`min-h-12 rounded-lg border-2 px-3 py-2 text-center transition-transform duration-100 active:scale-[0.98] ${
+                  mode === m ? "border-ink bg-ink text-paper" : "border-ink/40 bg-white/50"
+                }`}
+              >
+                <span className="font-display text-lg font-bold">{S.modes[m].title}</span>
+                <span className="block text-sm">{S.modes[m].desc}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          // one rule only: just say what it is, no choice to make
+          <p className="mt-1 font-hand text-lg">{S.modes[MODES[0]].desc}</p>
+        )}
       </Paper>
 
       <Paper>

@@ -6,7 +6,7 @@ import { suspenseBeats } from "../game/suspense";
  * synthesized stand-in built with the Web Audio API, so the game has sound before you supply
  * any files. Nothing plays until the first tap (browsers block audio before a gesture).
  */
-export type SfxName = "shake" | "toss" | "drumroll" | "stamp" | "crinkle" | "whirr" | "win" | "spin" | "tick" | "pen";
+export type SfxName = "shake" | "toss" | "drumroll" | "stamp" | "crinkle" | "whirr" | "win" | "spin" | "tick" | "pen" | "click";
 
 const FILES: Record<SfxName, string> = {
   shake: "/sfx/shake.mp3",
@@ -19,6 +19,7 @@ const FILES: Record<SfxName, string> = {
   spin: "/sfx/spin.mp3",
   tick: "/sfx/tick.mp3",
   pen: "/sfx/pen.mp3",
+  click: "/sfx/click.mp3",
 };
 
 const MUTE_KEY = "kallan-um-police:muted";
@@ -296,6 +297,12 @@ const synth: Record<SfxName, (o: Out, opts: PlayOptions) => void> = {
     const t0 = ctx!.currentTime;
     burst(out, t0, 0.022, 2600, 3, 0.5);
     thump(out, t0, 900, 400, 0.02, 0.12);
+  },
+  /** A button press: a short, soft, woody "tok" with a little paper snap, quiet enough to hear a hundred times. */
+  click(out) {
+    const t0 = ctx!.currentTime;
+    thump(out, t0, 420, 170, 0.06, 0.28);
+    burst(out, t0, 0.025, 3200, 1.2, 0.16);
   },
   /** A pen scratching on paper: fast, uneven, high-pitched scritches over a faint low rub. */
   pen(out, { duration = 0.6 }) {

@@ -11,3 +11,4 @@ so the game always has audio. Use .mp3 with exactly these names:
   spin.mp3      wheel launch whoosh (about 1 s)
   tick.mp3      one click of the wheel's pointer (very short; played many times per spin)
   pen.mp3       pen scratching on paper (about 0.6 s, played once per written number)
+  click.mp3     button press (very short and soft; played for every button)

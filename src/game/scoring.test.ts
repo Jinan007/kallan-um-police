@@ -30,12 +30,8 @@ describe("pointsForRole", () => {
     expect(pointsForRole("police", false, "STEAL")).toBe(0);
     expect(pointsForRole("kallan", false, "STEAL")).toBe(500);
   });
-  it("PENALTY wrong: police -500, thief 500", () => {
-    expect(pointsForRole("police", false, "PENALTY")).toBe(-500);
-    expect(pointsForRole("kallan", false, "PENALTY")).toBe(500);
-  });
   it("other roles are unaffected by the verdict or mode", () => {
-    for (const mode of ["STEAL", "PENALTY"] as const) {
+    for (const mode of ["STEAL"] as const) {
       expect(pointsForRole("raja", true, mode)).toBe(1000);
       expect(pointsForRole("raja", false, mode)).toBe(1000);
     }
@@ -53,7 +49,6 @@ describe("scoreRound", () => {
   it("scores a wrong guess in each mode", () => {
     expect(isCorrectGuess(roles, 2)).toBe(false);
     expect(scoreRound(roles, 2, "STEAL")).toEqual([0, 500, 1000, 700, 600]);
-    expect(scoreRound(roles, 2, "PENALTY")).toEqual([-500, 500, 1000, 700, 600]);
   });
   it("works with shuffled role order", () => {
     const shuffled = ["raja", "mantri", "kallan", "police", "rani"] as const;

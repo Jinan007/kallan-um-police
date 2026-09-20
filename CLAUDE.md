@@ -96,3 +96,7 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 
 ## Update: edit the wheel before the game (owner)
 - Setup screen has a "Wheel of dares" card with an "Edit the wheel (N dares)" button. It opens `DareEditorDialog` (same `DareEditor` as the in-game editor, exported from `fx/DareWheel.tsx`). Saves go to localStorage (`kallan-um-police:dares:v1`), so the end-of-game wheel uses them. 3-14 dares, label max 10 chars.
+
+## Update: button sounds, Penalty removed (owner)
+- **Click sound** (`click` in `audio/sound.ts`): one document-level `pointerdown` listener in `App` plays it for any enabled `<button>`, so new buttons get it automatically. Opt out with `data-silent` (used by the chits, which have their own sounds, and the wheel hub, which plays the spin sound). Override with `public/sfx/click.mp3`.
+- **PENALTY mode removed.** The only wrong-guess rule left is STEAL (police 0, thief 500; right guess police 500, thief 0). `WRONG_GUESS_MODES` in `config/rules.ts` still holds one entry so modes stay config-driven; the setup screen shows the mode picker only when there is more than one mode, otherwise just a line describing the rule. Saved games with a removed mode are discarded by `persist.ts`. This supersedes the PENALTY notes above.

@@ -210,6 +210,7 @@ export function DareWheel({ names, onClose }: { names: string; onClose: () => vo
             <button
               type="button"
               onClick={spin}
+              data-silent // the spin sound plays instead
               disabled={spinning}
               aria-label={result === null ? S.end.spin : S.end.respin}
               onPointerDown={() => !spinning && haptic()}

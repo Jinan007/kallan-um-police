@@ -23,7 +23,6 @@ export const S = {
 
   modes: {
     STEAL: { title: "Steal", desc: "Kallan snatches the 500 the Police would have earned" },
-    PENALTY: { title: "Penalty", desc: "Wrong guess: Police -500, Kallan 500" },
   } satisfies Record<WrongGuessMode, { title: string; desc: string }>,
 
   shuffle: {

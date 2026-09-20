@@ -149,6 +149,7 @@ function TableChit(p: ChitProps) {
       onPointerUp={() => finish(true)}
       onPointerCancel={() => finish(false)}
       onClick={(e) => e.detail === 0 && interactive && p.onTap(i)} // keyboard activation
+      data-silent // the chit has its own sounds
       className="pointer-events-auto absolute left-1/2 top-1/2"
       style={{
         x, y, z, scale, opacity,
