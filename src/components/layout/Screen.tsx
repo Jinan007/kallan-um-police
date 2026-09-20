@@ -24,11 +24,14 @@ export function Screen({ children, title, tone = "paper", scrim = "dim" }: Scree
 
   if (tone === "table") {
     return (
-      // pointer-events-none: taps fall through to the chits; real controls opt back in
-      <div className="pointer-events-none fixed inset-0 z-10 text-paper">
+      // Only the light-scrim screens (shuffle, pick) let taps fall through to the chits underneath.
+      // Every other screen must stay a normal, hit-testable scroller: Chrome on phones will not
+      // start a touch scroll inside a pointer-events:none ancestor, which made long screens
+      // (setup, verdict, end) impossible to scroll.
+      <div className={`fixed inset-0 z-10 text-paper ${scrim === "light" ? "pointer-events-none" : ""}`}>
         {/* The scrim reaches past the screen edges so a screen shake never exposes a gap at the corners. */}
         <div aria-hidden className={`absolute -inset-10 ${scrim === "light" ? "scrim-light" : "scrim-dim"}`} />
-        <main className={`relative mx-auto flex h-full max-w-md flex-col overflow-y-auto ${pad}`}>
+        <main className={`relative mx-auto flex h-full max-w-md flex-col overflow-y-auto overscroll-contain ${pad}`}>
           {heading && <div className="text-center [text-shadow:0_2px_6px_rgb(0_0_0/0.7)]">{heading}</div>}
           <div className="my-auto flex w-full flex-col gap-4 text-center">{children}</div>
         </main>
