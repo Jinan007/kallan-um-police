@@ -60,3 +60,6 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - SCORE, INTERVAL and END also sit on the table (`TABLE_PHASES`); `Table` is keyed by round so a new round drops the chits in again.
 - Verdict list shows each player's role and the points earned that round.
 - Dare wheel: the hub is the spin button (round, 27% of the wheel, does not rotate); the separate Spin button is gone.
+
+## Update: no reshuffle between picks (owner)
+- The per-turn gather/shake/scatter was removed. After the initial shuffle the chits stay put between turns (dragged positions persist for the round); only the picked chit leaves. This supersedes the "Per-turn reshuffle" note above.

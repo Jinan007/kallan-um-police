@@ -7,8 +7,6 @@ export const MOTION = {
 
   shuffle: { appearMs: 900, rollMs: 600, shakeMs: 800, scatterMs: 900 },
   pickLiftMs: 260,
-  /** Quick re-shuffle at the start of every player's pick: gather, shake, scatter. */
-  turn: { gatherMs: 450, shakeMs: 700, scatterMs: 850 },
 
   crumple: { height: 250, openSec: 0.55, closeSec: 0.3, textureSize: 192 },
 

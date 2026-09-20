@@ -8,7 +8,7 @@ import { ballTexture } from "./crumple";
 import { computeSlots } from "./slots";
 import type { Slot } from "./slots";
 
-type Stage = "appear" | "roll" | "shake" | "scatter" | "gather" | "table";
+type Stage = "appear" | "roll" | "shake" | "scatter" | "table";
 
 interface Props {
   count: number;
@@ -16,7 +16,7 @@ interface Props {
   /** owners[slot] !== null means that chit is taken and disappears. */
   owners: (number | null)[];
   phase: Phase;
-  /** Whose turn it is to pick. A new turn re-shuffles the remaining chits. */
+  /** Whose turn it is to pick; a new turn clears the lifted chit. */
   pickIdx: number;
   onShuffleDone: () => void;
   onPick: (slot: number) => void;
@@ -76,10 +76,6 @@ function TableChit(p: ChitProps) {
     } else if (stage === "appear") {
       const t = { duration: 0.35, delay: i * 0.05, ease: "easeOut" as const };
       go(x, 0, t); go(y, 0, t); go(opacity, 1, t); go(scale, 1, t); go(rot, slot.rot * 0.35, t);
-    } else if (stage === "gather") {
-      const t = { duration: MOTION.turn.gatherMs / 1000, ease: "easeInOut" as const };
-      go(x, ((i % 3) - 1) * 9, t); go(y, (Math.floor(i / 3) % 3 - 1) * 9, t);
-      go(z, 0, t); go(scale, 0.9, t); go(opacity, 1, t);
     } else if (stage === "scatter") {
       const t = { type: "spring" as const, stiffness: 150, damping: 15, delay: i * 0.04 };
       go(x, slot.x, t); go(y, slot.y, t); go(rot, slot.rot, t); go(scale, 1, t);
@@ -201,22 +197,21 @@ function TableChit(p: ChitProps) {
  * can sit on translucent layers and the table and its chits stay visible underneath.
  *
  * Shuffle: flat torn paper drops in a pile, crumples into balls, the pile shakes, then the
- * balls spring to their spots. Each later turn: the remaining balls gather, shake and
- * scatter again, then can be dragged around; a tap picks one.
+ * balls spring to their spots. After that the balls stay put between turns; they can be
+ * dragged around, and a tap picks one.
  */
 export function Table({ count, seed, owners, phase, pickIdx, onShuffleDone, onPick }: Props) {
   const reduced = !!useReducedMotion();
   const plane = useRef<HTMLDivElement>(null);
   const { w, h } = useSize(plane);
-  const [slotSeed, setSlotSeed] = useState(seed);
   const [stage, setStage] = useState<Stage>(phase === "SHUFFLE" ? "appear" : "table");
   const [lifted, setLifted] = useState<number | null>(null);
   const done = useRef(onShuffleDone);
   done.current = onShuffleDone;
 
   const slots = useMemo(
-    () => (w ? computeSlots(count, w, h, chit.w, chit.h, slotSeed) : []),
-    [count, w, h, slotSeed],
+    () => (w ? computeSlots(count, w, h, chit.w, chit.h, seed) : []),
+    [count, w, h, seed],
   );
   const balls = useMemo(
     () => [0, 1, 2, 3].map((k) => ballTexture(seed * 7 + k, MOTION.crumple.textureSize)),
@@ -231,7 +226,6 @@ export function Table({ count, seed, owners, phase, pickIdx, onShuffleDone, onPi
     const at = (ms: number, fn: () => void) => ids.push(window.setTimeout(fn, ms));
 
     if (phase === "SHUFFLE") {
-      setSlotSeed(seed);
       if (reduced) {
         setStage("table");
         done.current();
@@ -244,18 +238,11 @@ export function Table({ count, seed, owners, phase, pickIdx, onShuffleDone, onPi
         at(c, () => setStage("scatter"));
         at(d, () => { setStage("table"); done.current(); });
       }
-    } else if (phase === "PICK" && pickIdx > 0 && !reduced) {
-      const t = MOTION.turn;
-      const a = t.gatherMs, b = a + t.shakeMs, c = b + t.scatterMs;
-      setStage("gather");
-      at(a, () => setStage("shake"));
-      at(b, () => { setSlotSeed(seed + (pickIdx + 1) * 17); setStage("scatter"); });
-      at(c, () => setStage("table"));
     } else {
       setStage("table");
     }
     return () => ids.forEach(clearTimeout);
-  }, [phase, pickIdx, w, reduced, seed]);
+  }, [phase, w, reduced]);
 
   const enabled = phase === "PICK" && stage === "table";
   const pick = (slot: number) => {
