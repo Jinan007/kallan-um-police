@@ -132,6 +132,12 @@ export const S = {
   } satisfies Record<RoleId, string>,
 
 
+  error: {
+    title: "Oops, something broke",
+    body: "Sorry about that. Starting over will fix it.",
+    reset: "Start over",
+  },
+
   common: {
     points: (n: number) => `${n} points`,
     mute: "Sound off",

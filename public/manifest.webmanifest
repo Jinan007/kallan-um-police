@@ -1,0 +1,11 @@
+{
+  "name": "Kallan um Police",
+  "short_name": "Kallan um Police",
+  "description": "Pass-and-play paper-chit game: shuffle the chits, catch the thief.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1c1108",
+  "theme_color": "#3b2a1a",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

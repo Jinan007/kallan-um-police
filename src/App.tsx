@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useState } from "react";
 import { armUnlock, play } from "./audio/sound";
+import { useWakeLock } from "./hooks/useWakeLock";
 import { MOTION } from "./config/motion";
 import { Shake } from "./components/fx/Shake";
 import { Controls } from "./components/layout/Controls";
@@ -35,6 +36,7 @@ const readFilm = () => {
 export default function App() {
   const [s, send] = useReducer(reducer, undefined, loadState);
   const [film, setFilm] = useState(readFilm);
+  useWakeLock(s.phase !== "SETUP"); // keep the screen on during a game
   const changeFilm = (on: boolean) => {
     setFilm(on);
     try {

@@ -127,3 +127,6 @@ input { -webkit-user-select: text; user-select: text; font-size: 16px; }
   35% { opacity: 0.16; }
   65% { opacity: 0.06; }
 }
+
+/* Visible keyboard focus everywhere (buttons, inputs, the hold area). Pointer taps do not show it. */
+:focus-visible { outline: 3px solid #f6d46a; outline-offset: 2px; border-radius: 6px; }

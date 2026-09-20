@@ -108,3 +108,11 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - Cause: audio was unlocked once, on the first `pointerdown`. On touch devices that event is not a valid audio gesture (Chrome wants the release; iPhone wants `touchend`/`click`), so the AudioContext stayed suspended and `play()` silently skipped every sound forever.
 - Fix (`audio/sound.ts`): `armUnlock()` retries on `pointerup`, `touchend`, `click` and `keydown` until the context is running; `play()` also tries `resume()`. iPhone extras: `navigator.audioSession.type = "playback"` and a looping silent `<audio>` so the ringer switch does not mute Web Audio. Loudness: master mix now goes through a 2.4x boost and a compressor (phone speakers are small).
 - Lesson: never gate audio unlock on a single one-shot listener; test on a real phone.
+
+## P5 (polish) - done
+- Full scripted playthrough (4 players, 2 rounds, real pointer events) from setup to END: no errors; scoring and totals correct.
+- `ErrorBoundary` (`layout/ErrorBoundary.tsx`): a render crash shows a "Start over" card that clears the saved game and reloads.
+- `useWakeLock` keeps the screen on during a game (re-acquired when the tab returns).
+- Favicon (`public/favicon.svg`), web manifest, description/OG/iOS meta in `index.html`. No PNG app icons yet (iOS home-screen icon would need a PNG).
+- Global `:focus-visible` ring. README rewritten with run/deploy/rules/structure.
+- Known gaps: not tested on a real phone by me; no PNG icons; canvas-confetti is loaded on demand but Motion + Howler are in the main bundle.
