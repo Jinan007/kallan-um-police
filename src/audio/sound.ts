@@ -65,8 +65,18 @@ function audio(): AudioContext | null {
   if (!AC) return null;
   ctx = new AC();
   master = ctx.createGain();
-  master.gain.value = muted ? 0 : 1;
-  master.connect(ctx.destination);
+  master.gain.value = muted ? 0 : 1; // this is what the mute button controls
+  // Phone speakers are small and the effects are mixed quietly, so lift the whole mix and let a
+  // compressor catch the peaks (loud sounds stay clean instead of clipping).
+  const boost = ctx.createGain();
+  boost.gain.value = 2.4;
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -16;
+  comp.knee.value = 12;
+  comp.ratio.value = 6;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.2;
+  master.connect(boost).connect(comp).connect(ctx.destination);
   // one second of white noise, reused by every synthesized sound
   noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const data = noise.getChannelData(0);
@@ -74,10 +84,45 @@ function audio(): AudioContext | null {
   return ctx;
 }
 
-/** Call from the first user gesture. Starts the audio engine and looks for supplied files. */
+// Two seconds of silence. Playing it in an <audio> element tells iPhones this page is "media", so
+// Web Audio is no longer muted by the ringer switch.
+const SILENT_WAV = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+let silentEl: HTMLAudioElement | null = null;
+
+/**
+ * Start (or restart) the audio engine. Must run inside a real user tap, and it is safe to call
+ * again and again: browsers only allow audio to start from a tap, and on phones which event
+ * counts differs (Chrome: the release, iPhone: touchend or click). So `armUnlock` calls this on
+ * several events until the engine is actually running.
+ */
 export function unlock(): void {
   const c = audio();
-  if (c && c.state === "suspended") void c.resume();
+  try {
+    // Safari 16.4+: play like a media app, so the silent switch does not mute us
+    const session = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
+    if (session) session.type = "playback";
+  } catch {
+    /* not supported */
+  }
+  if (c) {
+    if (c.state !== "running") void c.resume().catch(() => undefined);
+    // a one-sample silent sound: the classic trick that finishes unlocking Web Audio on iOS
+    const s = c.createBufferSource();
+    s.buffer = c.createBuffer(1, 1, 22050);
+    s.connect(c.destination);
+    s.start(0);
+  }
+  if (!silentEl) {
+    try {
+      silentEl = new Audio(SILENT_WAV);
+      silentEl.loop = true;
+      void silentEl.play().catch(() => {
+        silentEl = null; // not allowed yet: try again on the next tap
+      });
+    } catch {
+      silentEl = null;
+    }
+  }
   if (probed) return;
   probed = true;
   (Object.keys(FILES) as SfxName[]).forEach((name) => {
@@ -90,6 +135,21 @@ export function unlock(): void {
       })
       .catch(() => undefined);
   });
+}
+
+/**
+ * Keep trying to unlock audio on every kind of tap until it works, then stop listening.
+ * Returns a cleanup function.
+ */
+export function armUnlock(): () => void {
+  const events = ["pointerup", "touchend", "click", "keydown"] as const;
+  const check = () => {
+    unlock();
+    if (ctx && ctx.state === "running") disarm();
+  };
+  const disarm = () => events.forEach((e) => window.removeEventListener(e, check, true));
+  events.forEach((e) => window.addEventListener(e, check, true));
+  return disarm;
 }
 
 // ---------- synthesized sounds ----------
@@ -338,7 +398,11 @@ export interface Playing {
 export function play(name: SfxName, opts: PlayOptions = {}): Playing {
   const none: Playing = { stop: () => undefined };
   const c = audio();
-  if (!c || c.state !== "running") return none;
+  if (!c) return none;
+  if (c.state !== "running") {
+    void c.resume().catch(() => undefined); // may still be locked; try again, skip this sound
+    return none;
+  }
   const file = howls[name];
   if (file) {
     const id = file.play();

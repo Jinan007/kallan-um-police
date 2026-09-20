@@ -103,3 +103,8 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 
 ## Fix: touch scrolling on phones
 - Screens on the table used a `pointer-events-none` wrapper (so taps reach the chits). Chrome on phones will not start a touch scroll inside a `pointer-events:none` ancestor, so long screens (setup, verdict, score, end) could not be scrolled. Now only the light-scrim screens (shuffle, pick) are `pointer-events-none`; every other table screen is a normal hit-testable scroller (`overscroll-contain`). Rule: never put a scroll container under `pointer-events:none`.
+
+## Fix: no sound on phones
+- Cause: audio was unlocked once, on the first `pointerdown`. On touch devices that event is not a valid audio gesture (Chrome wants the release; iPhone wants `touchend`/`click`), so the AudioContext stayed suspended and `play()` silently skipped every sound forever.
+- Fix (`audio/sound.ts`): `armUnlock()` retries on `pointerup`, `touchend`, `click` and `keydown` until the context is running; `play()` also tries `resume()`. iPhone extras: `navigator.audioSession.type = "playback"` and a looping silent `<audio>` so the ringer switch does not mute Web Audio. Loudness: master mix now goes through a 2.4x boost and a compressor (phone speakers are small).
+- Lesson: never gate audio unlock on a single one-shot listener; test on a real phone.
