@@ -17,7 +17,7 @@ const playRound = (): Action[] => [
 describe("history and reset", () => {
   it("records each round's points for the scoreboard", () => {
     const s = run(
-      { type: "START", players: NAMES, totalRounds: 2, mode: "FIXED", chits: CHITS },
+      { type: "START", players: NAMES, totalRounds: 2, mode: "STEAL", chits: CHITS },
       ...playRound(),
       { type: "CONTINUE" }, { type: "CONTINUE" },
       { type: "NEXT_ROUND", chits: CHITS },
@@ -36,3 +36,4 @@ describe("history and reset", () => {
     expect(s).toMatchObject({ phase: "SETUP", players: NAMES, totalRounds: 3, mode: "PENALTY", totals: [], history: [] });
   });
 });
+

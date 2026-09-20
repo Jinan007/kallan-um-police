@@ -23,12 +23,8 @@ describe("rolesForCount", () => {
 
 describe("pointsForRole", () => {
   it("right guess: police 500, thief 0", () => {
-    expect(pointsForRole("police", true, "FIXED")).toBe(500);
-    expect(pointsForRole("kallan", true, "FIXED")).toBe(0);
-  });
-  it("FIXED wrong: police 0, thief 500", () => {
-    expect(pointsForRole("police", false, "FIXED")).toBe(0);
-    expect(pointsForRole("kallan", false, "FIXED")).toBe(500);
+    expect(pointsForRole("police", true, "STEAL")).toBe(500);
+    expect(pointsForRole("kallan", true, "STEAL")).toBe(0);
   });
   it("STEAL wrong: thief takes the round's 500, police 0", () => {
     expect(pointsForRole("police", false, "STEAL")).toBe(0);
@@ -39,12 +35,12 @@ describe("pointsForRole", () => {
     expect(pointsForRole("kallan", false, "PENALTY")).toBe(500);
   });
   it("other roles are unaffected by the verdict or mode", () => {
-    for (const mode of ["FIXED", "STEAL", "PENALTY"] as const) {
+    for (const mode of ["STEAL", "PENALTY"] as const) {
       expect(pointsForRole("raja", true, mode)).toBe(1000);
       expect(pointsForRole("raja", false, mode)).toBe(1000);
     }
-    expect(pointsForRole("kunju", true, "FIXED")).toBe(100);
-    expect(pointsForRole("chechi", false, "FIXED")).toBe(200);
+    expect(pointsForRole("kunju", true, "STEAL")).toBe(100);
+    expect(pointsForRole("chechi", false, "STEAL")).toBe(200);
   });
 });
 
@@ -52,17 +48,16 @@ describe("scoreRound", () => {
   const roles = rolesForCount(5); // police, kallan, raja, rani, mantri
   it("scores a right guess", () => {
     expect(isCorrectGuess(roles, 1)).toBe(true);
-    expect(scoreRound(roles, 1, "FIXED")).toEqual([500, 0, 1000, 700, 600]);
+    expect(scoreRound(roles, 1, "STEAL")).toEqual([500, 0, 1000, 700, 600]);
   });
   it("scores a wrong guess in each mode", () => {
     expect(isCorrectGuess(roles, 2)).toBe(false);
-    expect(scoreRound(roles, 2, "FIXED")).toEqual([0, 500, 1000, 700, 600]);
     expect(scoreRound(roles, 2, "STEAL")).toEqual([0, 500, 1000, 700, 600]);
     expect(scoreRound(roles, 2, "PENALTY")).toEqual([-500, 500, 1000, 700, 600]);
   });
   it("works with shuffled role order", () => {
     const shuffled = ["raja", "mantri", "kallan", "police", "rani"] as const;
-    expect(scoreRound(shuffled, 2, "FIXED")).toEqual([1000, 600, 0, 500, 700]);
+    expect(scoreRound(shuffled, 2, "STEAL")).toEqual([1000, 600, 0, 500, 700]);
   });
 });
 
@@ -76,3 +71,4 @@ describe("totals", () => {
     expect(lastPlaceIds([10, 10, 30])).toEqual([0, 1]);
   });
 });
+

@@ -7,9 +7,11 @@ import { policeId, rolesByPlayer, thiefId } from "../../game/reducer";
 import type { GameState } from "../../game/reducer";
 import { winnerIds, lastPlaceIds } from "../../game/scoring";
 import { haptic, useHold } from "../../hooks/useHold";
-import { ChitUnroll } from "../chit/ChitUnroll";
+import { CrumpleOpen } from "../chit/CrumpleOpen";
 import { Table } from "../chit/Table";
 import { Badge } from "../fx/Badge";
+import { Celebration } from "../fx/Celebration";
+import { DareWheel } from "../fx/DareWheel";
 import { Shake } from "../fx/Shake";
 import { Stamp } from "../fx/Stamp";
 import { Button } from "../layout/Button";
@@ -26,7 +28,7 @@ const tableSeed = (s: GameState) => s.round * 100 + s.players.length;
 
 export function ShufflePhase({ s, send }: P) {
   return (
-    <Screen title={S.shuffle.heading(s.round, s.totalRounds)}>
+    <Screen tone="table" title={S.shuffle.heading(s.round, s.totalRounds)}>
       <p className="font-ml">{S.shuffle.body}</p>
       <Table
         count={s.players.length}
@@ -56,7 +58,7 @@ export function PickPhase({ s, send }: P) {
     );
   }
   return (
-    <Screen title={S.pick.chooseChit(name)}>
+    <Screen tone="table" title={S.pick.chooseChit(name)}>
       <Table
         count={s.players.length}
         seed={tableSeed(s)}
@@ -73,7 +75,7 @@ export function RevealPhase({ s, send }: P) {
   const role = s.chits[s.pickedSlot!];
   const fixed = role === "police" || role === "kallan";
   const content = (
-    <div className="flex h-full flex-col items-center justify-center px-3 pt-4 text-center">
+    <div className="flex h-full flex-col items-center justify-center px-3 text-center">
       <p className="font-ml">{S.reveal.youAre}</p>
       <p className="font-display text-5xl font-bold text-stamp">{S.roles[role]}</p>
       <p className="mt-2 font-hand text-lg">
@@ -84,7 +86,7 @@ export function RevealPhase({ s, send }: P) {
   return (
     <Screen title={s.players[s.pickIdx]}>
       <div {...bind} className="touch-none rounded-lg py-2" style={{ WebkitTouchCallout: "none" }}>
-        <ChitUnroll open={held} content={content} />
+        <CrumpleOpen open={held} content={content} seed={s.round * 31 + s.pickedSlot! * 7 + s.pickIdx} />
       </div>
       <p className="text-center font-display text-lg font-bold">
         {held ? S.reveal.holding : S.reveal.hold}
@@ -261,18 +263,21 @@ export function IntervalPhase({ onNext }: { onNext: () => void }) {
 }
 
 export function EndPhase({ s, send }: P) {
+  const [wheel, setWheel] = useState(false);
   const names = (ids: number[]) => ids.map((i) => s.players[i]).join(", ");
+  const losers = names(lastPlaceIds(s.totals));
   return (
     <Screen title={S.end.heading}>
-      {/* TODO(P4): winner reveal, confetti, loser meme, ശുഭം end card */}
-      <Paper className="text-center">
-        <p className="font-display text-2xl font-bold">{S.end.winner(names(winnerIds(s.totals)))}</p>
-        <p className="mt-2 font-ml">{S.end.last(names(lastPlaceIds(s.totals)))}</p>
-        <p className="mt-4 font-ml text-4xl">{S.end.finale}</p>
+      <Celebration names={names(winnerIds(s.totals))} />
+      <Paper>
+        <p className="font-ml text-lg">{S.end.last(losers)}</p>
+        <Button className="mt-3 w-full" onClick={() => setWheel(true)}>{S.end.dare}</Button>
       </Paper>
       <ScoreSheet s={s} />
+      <p className="font-ml text-4xl">{S.end.finale}</p>
       <Button onClick={() => send({ type: "PLAY_AGAIN" })}>{S.end.again}</Button>
+      {/* TODO(P3): loser meme + sounds; TODO(P4): ശുഭം end card styling */}
+      {wheel && <DareWheel names={losers} onClose={() => setWheel(false)} />}
     </Screen>
   );
 }
-

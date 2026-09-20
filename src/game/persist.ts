@@ -1,4 +1,4 @@
-﻿import { STORAGE_KEY } from "../config/rules";
+﻿import { STORAGE_KEY, WRONG_GUESS_MODES } from "../config/rules";
 import type { GameState, Phase } from "./reducer";
 import { initialState } from "./reducer";
 
@@ -16,6 +16,7 @@ function looksValid(x: unknown): x is GameState {
     Array.isArray(s.owners) &&
     Array.isArray(s.totals) &&
     Array.isArray(s.history) &&
+    s.mode in WRONG_GUESS_MODES && // drops saved games from before a mode was removed
     typeof s.round === "number"
   );
 }

@@ -37,3 +37,11 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 - `fx/`: Badge (slam), Stamp (verdict), Shake (screen shake). Accuse = fixed spotlight overlay + 1.5s jitter, then ACCUSE dispatch.
 - Reduced motion: durations go to 0 / shake skipped.
 - Sound hooks are `TODO(P3)` comments in Phases.tsx.
+
+## P2 feedback round (owner)
+- Everything centred: `Screen` wraps content in a `my-auto` column with `text-center` (my-auto, not justify-center, so tall content scrolls from the top). `tone="table"` = walnut room for shuffle/pick.
+- **FIXED mode removed** (it was identical to STEAL). Modes: STEAL (default) and PENALTY. Saved games with an unknown mode are discarded by `persist.ts`.
+- Table: plank grain via SVG fractal-noise data-URI in `index.css` (`.wood-top`, `.wood-room`), painted once; only the parent is transformed.
+- Chits are crumpled paper balls (`chit/crumple.ts` draws them on a canvas once per seed, cached as data URLs). Reveal = `CrumpleOpen.tsx`: ball swells and fades, wrinkled sheet grows with a 3D wobble, crease overlay relaxes, text fades in last. Replaces the nested-strip scroll (`ChitUnroll`, deleted).
+- Chits are draggable while picking (`Table.tsx`, own pointer handling on motion values; 8px threshold separates tap from drag; vertical drag is divided by cos(tilt) to compensate for the tilted plane). Dragged positions persist for the round in module state `dragged`.
+- End screen: `fx/Celebration.tsx` (trophy spring, rotating rays, sparkles, canvas-confetti loaded on demand) and `fx/DareWheel.tsx` (last place spins; winning wedge chosen first, spin aimed so it stops under the top pointer). Dares live in `config/dares.ts`.

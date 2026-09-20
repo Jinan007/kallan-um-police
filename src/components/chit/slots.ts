@@ -7,7 +7,7 @@
 }
 
 /** Small deterministic PRNG so chits land in the same place after a re-render or refresh. */
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -39,3 +39,4 @@ export function computeSlots(
     };
   });
 }
+

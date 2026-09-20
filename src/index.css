@@ -46,3 +46,36 @@ input { -webkit-user-select: text; user-select: text; font-size: 16px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Warm sepia backdrop for paper screens: soft light from above, darker corners. */
+.sepia-bg {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 12%, rgb(255 244 214 / 0.55), transparent 70%),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(90 60 20 / 0.28) 100%),
+    var(--color-sepia);
+}
+
+/* The room around the table: dark walnut lit by a lamp overhead. */
+.wood-room {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 18%, rgb(255 190 110 / 0.22), transparent 70%),
+    linear-gradient(180deg, #33200f, #1c1108);
+}
+
+/*
+ * Table top: warm base, long vertical plank grain (fractal noise stretched along y),
+ * plank seams, a lamp hotspot and a dark edge. Painted once; only its parent is transformed.
+ */
+.wood-top {
+  background-color: #7c4c24;
+  background-image:
+    radial-gradient(ellipse 65% 50% at 50% 24%, rgb(255 214 150 / 0.4), transparent 72%),
+    repeating-linear-gradient(90deg, transparent 0 96px, rgb(0 0 0 / 0.42) 96px 98px, rgb(255 226 170 / 0.09) 98px 100px),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.55 0.012' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.08  0 0 0 0 0.02  0 0 0 1.1 -0.4'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>"),
+    linear-gradient(160deg, #94612f, #6d4220 55%, #56331a);
+  box-shadow:
+    inset 0 0 0 3px #b07a44,
+    inset 0 0 0 6px rgb(0 0 0 / 0.25),
+    inset 0 0 60px rgb(0 0 0 / 0.55),
+    0 30px 40px rgb(0 0 0 / 0.55);
+}

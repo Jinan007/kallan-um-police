@@ -39,7 +39,7 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
                 maxLength={LIMITS.maxNameLength}
                 placeholder={S.setup.playerPlaceholder(i + 1)}
                 onChange={(e) => setName(i, e.target.value)}
-                className="min-h-12 min-w-0 flex-1 rounded-lg border-2 border-ink/40 bg-white/60 px-3 font-hand text-lg outline-none focus:border-ink"
+                className="min-h-12 min-w-0 flex-1 rounded-lg border-2 border-ink/40 bg-white/60 px-3 text-center font-hand text-lg outline-none focus:border-ink"
               />
               {names.length > LIMITS.minPlayers && (
                 <Button
@@ -78,7 +78,7 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
               role="radio"
               aria-checked={mode === m}
               onClick={() => setMode(m)}
-              className={`min-h-12 rounded-lg border-2 px-3 py-2 text-left transition-transform duration-100 active:scale-[0.98] ${
+              className={`min-h-12 rounded-lg border-2 px-3 py-2 text-center transition-transform duration-100 active:scale-[0.98] ${
                 mode === m ? "border-ink bg-ink text-paper" : "border-ink/40 bg-white/50"
               }`}
             >
@@ -96,3 +96,4 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
     </Screen>
   );
 }
+

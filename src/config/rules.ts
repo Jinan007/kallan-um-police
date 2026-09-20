@@ -27,13 +27,12 @@ export const RIGHT_GUESS = { police: 500, thief: 0 } as const;
 
 /** Wrong-guess modes, chosen in SETUP. */
 export const WRONG_GUESS_MODES = {
-  FIXED: { police: 0, thief: 500 },
   STEAL: { police: 0, thief: 500 },
   PENALTY: { police: -500, thief: 500 },
 } as const;
 
 export type WrongGuessMode = keyof typeof WRONG_GUESS_MODES;
-export const DEFAULT_MODE: WrongGuessMode = "FIXED";
+export const DEFAULT_MODE: WrongGuessMode = "STEAL";
 
 export const LIMITS = {
   minPlayers: 4,
@@ -49,3 +48,4 @@ export const TIMINGS = {
 } as const;
 
 export const STORAGE_KEY = "kallan-um-police:v1";
+

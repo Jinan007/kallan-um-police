@@ -19,7 +19,6 @@ export const S = {
   },
 
   modes: {
-    FIXED: { title: "Fixed", desc: "Wrong guess: Police 0, Kallan 500" },
     STEAL: { title: "Steal", desc: "Kallan snatches the 500 the Police would have earned" },
     PENALTY: { title: "Penalty", desc: "Wrong guess: Police -500, Kallan 500" },
   } satisfies Record<WrongGuessMode, { title: string; desc: string }>,
@@ -93,6 +92,14 @@ export const S = {
     last: (names: string) => `Last place: ${names}`,
     finale: "ശുഭം",
     again: "Veendum kalikkam?",
+    dare: "Spin the wheel of dares",
+    dareFor: (names: string) => `Dare time for ${names}!`,
+    spin: "SPIN",
+    spinning: "Spinning...",
+    dareResult: "Your dare",
+    close: "Done",
+    respin: "Spin again",
+    winnerLabel: "Winner",
   },
 
   roles: {
@@ -114,3 +121,5 @@ export const S = {
     unmute: "Sound on",
   },
 } as const;
+
+

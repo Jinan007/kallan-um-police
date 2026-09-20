@@ -10,7 +10,7 @@ const CHITS: RoleId[] = ["raja", "police", "kallan", "rani", "mantri"];
 const run = (state: GameState, ...actions: Action[]) => actions.reduce(reducer, state);
 
 const started = () =>
-  run(initialState, { type: "START", players: NAMES, totalRounds: 2, mode: "FIXED", chits: CHITS });
+  run(initialState, { type: "START", players: NAMES, totalRounds: 2, mode: "STEAL", chits: CHITS });
 
 /** Everyone picks the slot with their own index and skips through the peeks. */
 const allPicked = (s = started()) => {
@@ -103,3 +103,4 @@ describe("state machine", () => {
     expect(again).toMatchObject({ phase: "SETUP", players: NAMES, totalRounds: 2, totals: [] });
   });
 });
+
