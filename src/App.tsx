@@ -12,7 +12,7 @@ import {
 
 /** Phases played on the wooden table. The Table stays mounted across all of them. */
 const TABLE_PHASES: readonly Phase[] = [
-  "SHUFFLE", "PICK", "REVEAL", "POLICE_CALL", "ACCUSE", "VERDICT", "SCORE", "INTERVAL", "END",
+  "SETUP", "SHUFFLE", "PICK", "REVEAL", "POLICE_CALL", "ACCUSE", "VERDICT", "SCORE", "INTERVAL", "END",
 ];
 
 /** Seed for chit placement: same round and player count always lands the same way. */
@@ -30,7 +30,7 @@ export default function App() {
           {/* key: a new round mounts a fresh table so the chits drop in again */}
           <Table
             key={s.round}
-            count={s.players.length}
+            count={s.phase === "SETUP" ? 0 : s.players.length} // setup shows the bare table
             seed={tableSeed(s)}
             owners={s.owners}
             phase={s.phase}

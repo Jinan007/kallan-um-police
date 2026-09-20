@@ -28,7 +28,7 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
   const setName = (i: number, v: string) => setNames((p) => p.map((n, j) => (j === i ? v : n)));
 
   return (
-    <Screen title={S.setup.heading}>
+    <Screen tone="table" title={S.setup.heading}>
       <Paper>
         <h2 className="font-display text-xl font-bold">{S.setup.playersLabel}</h2>
         <ul className="mt-2 flex flex-col gap-2">
@@ -89,7 +89,7 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
         </div>
       </Paper>
 
-      {error && <p role="alert" className="font-ml text-stamp">{error}</p>}
+      {error && <p role="alert" className="font-ml text-[#ff9b93]">{error}</p>}
       <Button disabled={!!error} onClick={() => onStart(trimmed.filter(Boolean), rounds, mode)}>
         {S.setup.start}
       </Button>
