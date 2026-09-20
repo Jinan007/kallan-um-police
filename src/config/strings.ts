@@ -1,87 +1,96 @@
 ﻿import type { RoleId, WrongGuessMode } from "./rules";
 
+/** Mostly English, with Manglish for the flavour. */
 export const S = {
   appTitle: "Kallan um Police",
-  tagline: "Chittu kuluki, kallane pidikku!",
+  tagline: "Shuffle the chits, catch the thief!",
 
   setup: {
-    heading: "Kaliyilekku swagatham",
-    playersLabel: "Aarokke kalikkunnu?",
-    playerPlaceholder: (n: number) => `Kalikkaran ${n}`,
-    addPlayer: "Oraale koodi cherkku",
-    removePlayer: "Maattu",
-    roundsLabel: "Ethra round?",
-    modeLabel: "Thettiya pidikku aanel?",
-    start: "Kali thudangatte",
-    needMore: (min: number) => `Kurachu ${min} perenkilum venam, ketto`,
-    duplicate: "Pere randu thavana? Vere peru idu",
+    heading: "Let's play!",
+    playersLabel: "Who's playing?",
+    playerPlaceholder: (n: number) => `Player ${n}`,
+    addPlayer: "Add a player",
+    removePlayer: "Remove",
+    roundsLabel: "How many rounds?",
+    modeLabel: "If the Police guess wrong...",
+    start: "Kali thudangatte!",
+    needMore: (min: number) => `You need at least ${min} players`,
+    duplicate: "Two players have the same name. Make them different",
   },
 
   modes: {
-    FIXED: { title: "Fixed", desc: "Thettiyal Police 0, Kallan 500" },
-    STEAL: { title: "Steal", desc: "Police-nte 500 Kallan eduthu poyi" },
-    PENALTY: { title: "Penalty", desc: "Thettiyal Police -500, Kallan 500" },
+    FIXED: { title: "Fixed", desc: "Wrong guess: Police 0, Kallan 500" },
+    STEAL: { title: "Steal", desc: "Kallan snatches the 500 the Police would have earned" },
+    PENALTY: { title: "Penalty", desc: "Wrong guess: Police -500, Kallan 500" },
   } satisfies Record<WrongGuessMode, { title: string; desc: string }>,
 
   shuffle: {
-    heading: (r: number, total: number) => `Round ${r}/${total}`,
-    body: "Chittu ellam kuluki, mesha-mel ittu",
-    button: "Chittu kuluki idu",
+    heading: (r: number, total: number) => `Round ${r} of ${total}`,
+    body: "The chits are ready to be shuffled and thrown on the table.",
+    button: "Shuffle the chits",
   },
 
   pick: {
     cover: (name: string) => `Phone ${name}-nu kodukku`,
-    coverHint: "Mattullavar nokkaruthu, ketto!",
-    ready: "Njan aanu, phone thaa",
-    chooseChit: (name: string) => `${name}, oru chit edukku`,
+    coverHint: "Everyone else, no peeking! Nokkaruthu!",
+    ready: "I have the phone",
+    chooseChit: (name: string) => `${name}, pick a chit`,
   },
 
   reveal: {
-    hold: "Pidichu vechal chit thurakkum",
-    holding: "Vittal chit chuttum",
-    done: "Kandu, adutha aalkku kodukkaam",
-    youAre: "Ninte role",
+    hold: "Press and hold the chit to open it",
+    holding: "Let go to fold it back",
+    done: "Got it, pass the phone",
+    youAre: "You are the",
+    worth: (n: number) => `Worth ${n} points`,
+    variable: "Points depend on the verdict",
   },
 
   policeCall: {
-    heading: "Police vilikkunnu!",
-    isPolice: (name: string) => `${name} aanu Police`,
-    next: "Kallane pidikkan pokam",
+    heading: "Police is calling!",
+    isPolice: (name: string) => `${name} is the Police`,
+    next: "Go catch the thief",
   },
 
   accuse: {
-    heading: (name: string) => `${name} Sir, aaraanu kallan?`,
-    hint: "Oraale thirenjedukku",
-    suspense: "Oru nimisham...",
+    heading: (name: string) => `${name} Sir, who is the Kallan?`,
+    hint: "Tap the player you suspect",
+    suspense: "Wait for it...",
   },
 
   verdict: {
     caught: "PIDICHU!",
     wrong: "THETTI!",
-    caughtLine: (thief: string) => `${thief} thanne aanu kallan!`,
+    caughtLine: (thief: string) => `${thief} was the Kallan!`,
     wrongLine: (accused: string, thief: string) =>
-      `${accused} alla, ${thief} aanu asli kallan!`,
-    revealAll: "Ellarude chittu ithaa",
-    next: "Score nokkaam",
+      `Not ${accused}! ${thief} was the real Kallan!`,
+    revealAll: "Everyone's chits",
+    next: "See the score",
   },
 
   score: {
-    heading: (r: number) => `Round ${r} score`,
-    total: "Aake",
-    nextRound: "Adutha round",
-    finish: "Result nokkaam",
+    heading: (r: number) => `Score after round ${r}`,
+    total: "Total",
+    round: "Round",
+    nextRound: "Next round",
+    finish: "See the final result",
+    reset: "Reset game",
+    resetAsk: "Reset the game and go back to setup? All scores will be lost.",
+    resetYes: "Yes, reset",
+    resetNo: "Keep playing",
   },
 
   interval: {
     heading: "ഇടവേള",
-    body: "Chaya kudichittu varaam",
-    next: "Thudaru",
+    sub: "Intermission",
+    body: "Time for a chaya break!",
+    next: "Continue",
   },
 
   end: {
-    heading: "Kali theernnu",
-    winner: (names: string) => `Jayichathu: ${names}`,
-    last: (names: string) => `Nammude kalikkaran: ${names}`,
+    heading: "Game over",
+    winner: (names: string) => `Winner: ${names}`,
+    last: (names: string) => `Last place: ${names}`,
     finale: "ശുഭം",
     again: "Veendum kalikkam?",
   },
@@ -100,7 +109,7 @@ export const S = {
   } satisfies Record<RoleId, string>,
 
   common: {
-    points: (n: number) => `${n} point`,
+    points: (n: number) => `${n} points`,
     mute: "Sound off",
     unmute: "Sound on",
   },

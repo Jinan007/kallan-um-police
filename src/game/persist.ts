@@ -15,6 +15,7 @@ function looksValid(x: unknown): x is GameState {
     Array.isArray(s.chits) &&
     Array.isArray(s.owners) &&
     Array.isArray(s.totals) &&
+    Array.isArray(s.history) &&
     typeof s.round === "number"
   );
 }

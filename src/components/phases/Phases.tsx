@@ -1,5 +1,7 @@
 ﻿import { useState } from "react";
+import { ROLES } from "../../config/rules";
 import { S } from "../../config/strings";
+import { ScoreSheet } from "./ScoreSheet";
 import { policeId, rolesByPlayer, thiefId } from "../../game/reducer";
 import type { GameState } from "../../game/reducer";
 import { winnerIds, lastPlaceIds } from "../../game/scoring";
@@ -77,6 +79,11 @@ export function RevealPhase({ s, send }: P) {
           <>
             <p className="font-ml">{S.reveal.youAre}</p>
             <p className="font-display text-5xl font-bold text-stamp">{S.roles[role]}</p>
+            <p className="mt-2 font-hand text-lg">
+              {role === "police" || role === "kallan"
+                ? S.reveal.variable
+                : S.reveal.worth(ROLES.find((r) => r.id === role)!.points)}
+            </p>
           </>
         ) : (
           <p className="font-display text-xl font-bold">{S.reveal.hold}</p>
@@ -153,28 +160,23 @@ export function VerdictPhase({ s, send }: P) {
 
 export function ScorePhase({ s, send }: P) {
   const last = s.round >= s.totalRounds;
+  const [confirming, setConfirming] = useState(false);
   return (
     <Screen title={S.score.heading(s.round)}>
       {/* TODO(P4): SVG pen-stroke handwriting onto the ruled scoreboard */}
-      <Paper>
-        <table className="w-full text-lg">
-          <thead>
-            <tr className="text-left font-display">
-              <th>&nbsp;</th><th className="text-right">+/-</th><th className="text-right">{S.score.total}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {s.players.map((name, i) => (
-              <tr key={i}>
-                <td>{name}</td>
-                <td className="text-right">{s.deltas[i] > 0 ? `+${s.deltas[i]}` : s.deltas[i]}</td>
-                <td className="text-right font-bold">{s.totals[i]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Paper>
+      <ScoreSheet s={s} />
       <Button onClick={() => send({ type: "CONTINUE" })}>{last ? S.score.finish : S.score.nextRound}</Button>
+      {confirming ? (
+        <Paper className="text-center">
+          <p className="font-hand text-lg">{S.score.resetAsk}</p>
+          <div className="mt-3 flex gap-3">
+            <Button variant="ghost" className="flex-1" onClick={() => setConfirming(false)}>{S.score.resetNo}</Button>
+            <Button variant="danger" className="flex-1" onClick={() => send({ type: "RESET" })}>{S.score.resetYes}</Button>
+          </div>
+        </Paper>
+      ) : (
+        <Button variant="ghost" onClick={() => setConfirming(true)}>{S.score.reset}</Button>
+      )}
     </Screen>
   );
 }
@@ -185,6 +187,7 @@ export function IntervalPhase({ onNext }: { onNext: () => void }) {
       {/* TODO(P4): projector-style ഇടവേള title card */}
       <Paper className="mt-10 text-center">
         <h1 className="font-ml text-5xl font-bold">{S.interval.heading}</h1>
+        <p className="font-display text-xl">{S.interval.sub}</p>
         <p className="mt-2">{S.interval.body}</p>
       </Paper>
       <Button onClick={onNext}>{S.interval.next}</Button>
@@ -202,15 +205,7 @@ export function EndPhase({ s, send }: P) {
         <p className="mt-2 font-ml">{S.end.last(names(lastPlaceIds(s.totals)))}</p>
         <p className="mt-4 font-ml text-4xl">{S.end.finale}</p>
       </Paper>
-      <Paper>
-        <ul>
-          {s.players.map((name, i) => (
-            <li key={i} className="flex justify-between">
-              <span>{name}</span><span className="font-bold">{s.totals[i]}</span>
-            </li>
-          ))}
-        </ul>
-      </Paper>
+      <ScoreSheet s={s} />
       <Button onClick={() => send({ type: "PLAY_AGAIN" })}>{S.end.again}</Button>
     </Screen>
   );

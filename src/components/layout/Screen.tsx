@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+﻿import type { HTMLAttributes, ReactNode } from "react";
 
 /** Full-height column with safe-area padding; every phase renders inside one. */
 export function Screen({ children, title }: { children: ReactNode; title?: string }) {
@@ -10,6 +10,10 @@ export function Screen({ children, title }: { children: ReactNode; title?: strin
   );
 }
 
-export function Paper({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`paper rounded-lg p-4 ${className}`}>{children}</section>;
+export function Paper({ children, className = "", ...rest }: HTMLAttributes<HTMLElement>) {
+  return (
+    <section {...rest} className={`paper rounded-lg p-4 ${className}`}>
+      {children}
+    </section>
+  );
 }

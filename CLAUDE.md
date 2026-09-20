@@ -22,3 +22,10 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 
 ## Commands
 `npm run dev -- --host` (test on phone) | `npm test` | `npm run build`
+
+## P1 feedback round (owner)
+- Copy is mostly English with Manglish flavour (headings like "Phone <name>-nu kodukku", "Veendum kalikkam?").
+- Scoreboard writes rounds downwards (`history[round][player]`, `ScoreSheet.tsx`) with a totals row. P4 adds pen-stroke handwriting on top.
+- `RESET` action (also used by PLAY_AGAIN) is offered on every SCORE screen behind a confirm; it keeps names and settings.
+- Bug fixed: `Paper` dropped event props, so press-and-hold never fired and roles never showed.
+- Still P2: 3D scatter / pick / unroll. Still P3: memes.

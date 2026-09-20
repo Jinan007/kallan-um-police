@@ -27,6 +27,8 @@ export interface GameState {
   deltas: number[];
   /** Running totals, per player. */
   totals: number[];
+  /** Points per finished round: history[r][player]. Drives the scoreboard. */
+  history: number[][];
 }
 
 export type Action =
@@ -38,6 +40,7 @@ export type Action =
   | { type: "ACCUSE"; playerId: number }
   | { type: "NEXT_ROUND"; chits: RoleId[] }
   | { type: "PLAY_AGAIN" }
+  | { type: "RESET" }
   | { type: "RESTORE"; state: GameState };
 
 export const initialState: GameState = {
@@ -54,6 +57,7 @@ export const initialState: GameState = {
   correct: null,
   deltas: [],
   totals: [],
+  history: [],
 };
 
 export function rolesByPlayer(s: Pick<GameState, "chits" | "owners" | "players">): (RoleId | null)[] {
@@ -99,6 +103,7 @@ export function reducer(state: GameState, action: Action): GameState {
         totalRounds: action.totalRounds,
         mode: action.mode,
         totals: action.players.map(() => 0),
+        history: [],
       };
       return freshRound(base, 1, action.chits);
     }
@@ -136,6 +141,7 @@ export function reducer(state: GameState, action: Action): GameState {
         correct: isCorrectGuess(roles, action.playerId),
         deltas,
         totals: addTotals(state.totals, deltas),
+        history: [...state.history, deltas],
       };
     }
 
@@ -152,6 +158,7 @@ export function reducer(state: GameState, action: Action): GameState {
       return state.phase === "INTERVAL" ? freshRound(state, state.round + 1, action.chits) : state;
 
     case "PLAY_AGAIN":
+    case "RESET": // keeps names and settings so a restart is one tap
       return { ...initialState, players: state.players, mode: state.mode, totalRounds: state.totalRounds };
   }
 }
