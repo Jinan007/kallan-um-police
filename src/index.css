@@ -86,3 +86,44 @@ input { -webkit-user-select: text; user-select: text; font-size: 16px; }
 
 /* Text on paper is always ink, even when the surrounding screen uses light text. */
 .paper { color: var(--color-ink); }
+
+/* ---- film layer (see FilmLayer.tsx) ---- */
+.film-grain {
+  position: absolute;
+  inset: -50%;
+  background-image: url("/img/noise.png");
+  opacity: 0.1;
+  will-change: transform;
+}
+.film-grain-anim { animation: film-grain 0.9s steps(1) infinite; }
+@keyframes film-grain {
+  0%   { transform: translate3d(0, 0, 0); }
+  11%  { transform: translate3d(-6%, -9%, 0); }
+  22%  { transform: translate3d(7%, 4%, 0); }
+  33%  { transform: translate3d(-3%, 11%, 0); }
+  44%  { transform: translate3d(10%, -6%, 0); }
+  55%  { transform: translate3d(-9%, 3%, 0); }
+  66%  { transform: translate3d(4%, 8%, 0); }
+  77%  { transform: translate3d(-5%, -4%, 0); }
+  88%  { transform: translate3d(8%, -10%, 0); }
+}
+.film-vignette { background: radial-gradient(ellipse at 50% 48%, transparent 52%, rgb(18 8 0 / 0.5) 100%); }
+.film-scratch {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: linear-gradient(transparent, rgb(255 250 235 / 0.75) 12%, rgb(255 250 235 / 0.75) 88%, transparent);
+  animation: film-scratch 0.4s linear both;
+}
+@keyframes film-scratch {
+  0%   { opacity: 0; transform: translateX(0); }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translateX(5px); }
+}
+.film-flicker { position: absolute; inset: 0; background: #000; animation: film-flicker 0.2s linear both; }
+@keyframes film-flicker {
+  0%, 100% { opacity: 0; }
+  35% { opacity: 0.16; }
+  65% { opacity: 0.06; }
+}

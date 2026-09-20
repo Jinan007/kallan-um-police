@@ -6,14 +6,17 @@ import { suspenseBeats } from "../game/suspense";
  * synthesized stand-in built with the Web Audio API, so the game has sound before you supply
  * any files. Nothing plays until the first tap (browsers block audio before a gesture).
  */
-export type SfxName = "shake" | "toss" | "drumroll" | "stamp";
+export type SfxName = "shake" | "toss" | "drumroll" | "stamp" | "crinkle" | "whirr";
 
 const FILES: Record<SfxName, string> = {
   shake: "/sfx/shake.mp3",
   toss: "/sfx/toss.mp3",
   drumroll: "/sfx/drumroll.mp3",
   stamp: "/sfx/stamp.mp3",
+  crinkle: "/sfx/crinkle.mp3",
+  whirr: "/sfx/whirr.mp3",
 };
+const BGM_FILE = "/sfx/bgm.mp3";
 
 const MUTE_KEY = "kallan-um-police:muted";
 
@@ -49,6 +52,7 @@ export function setMuted(next: boolean): void {
   }
   if (master) master.gain.value = next ? 0 : 1;
   Object.values(howls).forEach((h) => h?.mute(next));
+  bgmFile?.mute(next);
   listeners.forEach((f) => f());
 }
 
@@ -67,10 +71,108 @@ function audio(): AudioContext | null {
   return ctx;
 }
 
-/** Call from the first user gesture. Starts the audio engine and looks for supplied files. */
+// ---------- background music ----------
+// A soft, slow tune in an old-film South Indian mood: a tanpura-like drone plus plucked
+// notes wandering over a raga scale (D E-flat F-sharp G A B-flat C-sharp), with an echo.
+// If /sfx/bgm.mp3 exists it plays that on loop instead.
+
+const RAGA = [0, 1, 4, 5, 7, 8, 11];
+let bgmStarted = false;
+let bgmFile: Howl | null = null;
+
+function startGenerativeBgm() {
+  const c = ctx!;
+  const bus = c.createGain();
+  bus.gain.value = 0.5; // keeps the music well under the effects
+  bus.connect(master!);
+
+  // echo
+  const delay = c.createDelay(1);
+  delay.delayTime.value = 0.42;
+  const fb = c.createGain();
+  fb.gain.value = 0.38;
+  const damp = c.createBiquadFilter();
+  damp.type = "lowpass";
+  damp.frequency.value = 1800;
+  delay.connect(damp).connect(fb).connect(delay);
+  damp.connect(bus);
+
+  // drone: root and fifth, slowly breathing
+  for (const [freq, level] of [[73.42, 0.05], [110, 0.035]] as const) {
+    const o = c.createOscillator();
+    o.type = "triangle";
+    o.frequency.value = freq;
+    const g = c.createGain();
+    g.gain.value = level;
+    const lfo = c.createOscillator();
+    lfo.frequency.value = 0.09 + Math.random() * 0.05;
+    const lg = c.createGain();
+    lg.gain.value = level * 0.5;
+    lfo.connect(lg).connect(g.gain);
+    o.connect(g).connect(bus);
+    o.start();
+    lfo.start();
+  }
+
+  let idx = 7;
+  let next = c.currentTime + 0.5;
+  const pluck = (t: number, degree: number) => {
+    const o = c.createOscillator();
+    o.type = "triangle";
+    o.frequency.value = 293.66 * 2 ** (RAGA[degree % 7] / 12) * (degree >= 7 ? 2 : 1);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.11, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+    o.connect(g);
+    g.connect(bus);
+    g.connect(delay);
+    o.start(t);
+    o.stop(t + 1.5);
+  };
+  window.setInterval(() => {
+    while (next < c.currentTime + 0.8) {
+      if (Math.random() > 0.28) {
+        idx = Math.max(2, Math.min(12, idx + [-2, -1, -1, 0, 1, 1, 2][Math.floor(Math.random() * 7)]));
+        pluck(next, idx);
+      }
+      next += Math.random() < 0.35 ? 0.9 : 0.6;
+    }
+  }, 250);
+}
+
+/** Start the background music (once). Safe to call repeatedly. */
+function startBgm() {
+  if (bgmStarted || !audio()) return;
+  bgmStarted = true;
+  fetch(BGM_FILE, { method: "HEAD" })
+    .then((r) => {
+      if (r.ok && (r.headers.get("content-type") ?? "").startsWith("audio")) {
+        bgmFile = new Howl({ src: [BGM_FILE], loop: true, volume: 0.35, mute: muted });
+        bgmFile.play();
+      } else {
+        startGenerativeBgm();
+      }
+    })
+    .catch(startGenerativeBgm);
+  // save battery: silence everything while the tab is in the background
+  document.addEventListener("visibilitychange", () => {
+    if (!ctx) return;
+    if (document.hidden) {
+      void ctx.suspend();
+      bgmFile?.pause();
+    } else {
+      void ctx.resume();
+      bgmFile?.play();
+    }
+  });
+}
+
+/** Call from the first user gesture. Starts the audio engine, the music, and looks for supplied files. */
 export function unlock(): void {
   const c = audio();
   if (c && c.state === "suspended") void c.resume();
+  startBgm();
   if (probed) return;
   probed = true;
   (Object.keys(FILES) as SfxName[]).forEach((name) => {
@@ -180,6 +282,45 @@ const synth: Record<SfxName, (o: Out, opts: PlayOptions) => void> = {
       thump(out, t0 + b, 70, 42, 0.16, 0.55);
       thump(out, t0 + b + 0.16, 62, 40, 0.14, 0.4);
     });
+  },
+  /** Paper being crumpled or smoothed out: quick high, uneven crackles. */
+  crinkle(out, { duration = 0.55 }) {
+    const t0 = ctx!.currentTime;
+    let t = 0;
+    while (t < duration) {
+      const fade = 1 - t / duration;
+      burst(out, t0 + t, 0.02 + Math.random() * 0.03, 3500 + Math.random() * 4000, 2.2, (0.12 + Math.random() * 0.3) * fade);
+      t += 0.012 + Math.random() * 0.05;
+    }
+  },
+  /** Film projector: a steady mechanical whirr with a 24-per-second shutter flutter. */
+  whirr(out, { duration = 1.4 }) {
+    const c = ctx!;
+    const t0 = c.currentTime;
+    const src = c.createBufferSource();
+    src.buffer = noise;
+    src.loop = true;
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.frequency.value = 520;
+    f.Q.value = 1.4;
+    const flutter = c.createGain();
+    flutter.gain.value = 0.5;
+    const lfo = c.createOscillator();
+    lfo.frequency.value = 24;
+    const depth = c.createGain();
+    depth.gain.value = 0.5;
+    lfo.connect(depth).connect(flutter.gain);
+    const env = c.createGain();
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.exponentialRampToValueAtTime(0.28, t0 + 0.12);
+    env.gain.setValueAtTime(0.28, t0 + duration - 0.25);
+    env.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    src.connect(f).connect(flutter).connect(env).connect(out);
+    src.start(t0);
+    lfo.start(t0);
+    src.stop(t0 + duration + 0.05);
+    lfo.stop(t0 + duration + 0.05);
   },
   /** Rubber stamp / badge hitting a desk. */
   stamp(out) {

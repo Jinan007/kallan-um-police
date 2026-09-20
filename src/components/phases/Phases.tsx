@@ -1,6 +1,6 @@
 ﻿import { motion, useReducedMotion } from "motion/react";
 import { play } from "../../audio/sound";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MOTION } from "../../config/motion";
 import { ROLES, TIMINGS } from "../../config/rules";
 import { S } from "../../config/strings";
@@ -11,6 +11,7 @@ import { useHold } from "../../hooks/useHold";
 import { CrumpleOpen } from "../chit/CrumpleOpen";
 import { Badge } from "../fx/Badge";
 import { Celebration } from "../fx/Celebration";
+import { MemeFrame } from "../fx/MemeFrame";
 import { DareWheel } from "../fx/DareWheel";
 import { Shake } from "../fx/Shake";
 import { Stamp } from "../fx/Stamp";
@@ -28,7 +29,6 @@ type P = { s: GameState } & Send;
 export function ShufflePhase({ s }: { s: GameState }) {
   return (
     <Screen tone="table" scrim="light" title={S.shuffle.heading(s.round, s.totalRounds)}>
-      {/* TODO(P3): paper crinkle and chit toss sounds */}
     </Screen>
   );
 }
@@ -43,6 +43,15 @@ export function PickPhase({ s }: { s: GameState }) {
 
 export function RevealPhase({ s, send }: P) {
   const { held, bind } = useHold();
+  // paper crackles as it is opened and again as it is folded back
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    play("crinkle", { duration: held ? 0.55 : 0.35 });
+  }, [held]);
   const role = s.chits[s.pickedSlot!];
   const fixed = role === "police" || role === "kallan";
   const content = (
@@ -87,8 +96,8 @@ export function PolicePhase({ s, send }: P) {
           >
             {S.policeCall.isPolice(s.players[policeId(s)])}
           </motion.p>
-          {/* TODO(P3): stamp thud sound on impact */}
         </Paper>
+        <MemeFrame event="police_reveal" tilt={-2} delay={MOTION.policeBadge.slamSec + 0.25} />
         <Button onClick={() => send({ type: "CONTINUE" })}>{S.policeCall.next}</Button>
       </Screen>
     </Shake>
@@ -148,7 +157,15 @@ export function VerdictPhase({ s, send }: P) {
           <motion.p className="mt-4 font-ml text-lg" {...fade(st.thiefDelaySec)}>
             {s.correct ? S.verdict.caughtLine(thief) : S.verdict.wrongLine(accused, thief)}
           </motion.p>
-          {/* TODO(P3): meme reaction in a vintage photo frame */}
+          {s.correct ? (
+            <MemeFrame event="caught" tilt={-2} delay={st.thiefDelaySec + 0.15} className="mt-4" />
+          ) : (
+            // a wrong guess gets two reactions: the police who missed, and the thief who got away
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <MemeFrame event="wrong_accuse" tilt={-3} delay={st.thiefDelaySec + 0.15} className="[&_figcaption]:text-sm" />
+              <MemeFrame event="escaped" tilt={3} delay={st.thiefDelaySec + 0.3} className="[&_figcaption]:text-sm" />
+            </div>
+          )}
         </Paper>
         <Paper style={{ perspective: 700 }}>
           <h2 className="font-display text-lg font-bold">{S.verdict.revealAll}</h2>
@@ -206,6 +223,10 @@ export function ScorePhase({ s, send }: P) {
 }
 
 export function IntervalPhase({ onNext }: { onNext: () => void }) {
+  // a projector whirr as the card comes up
+  useEffect(() => {
+    play("whirr", { duration: 1.4 });
+  }, []);
   return (
     <Screen tone="table">
       {/* TODO(P4): projector-style ഇടവേള title card */}
@@ -226,14 +247,16 @@ export function EndPhase({ s, send }: P) {
   return (
     <Screen tone="table" title={S.end.heading}>
       <Celebration names={names(winnerIds(s.totals))} />
+      <MemeFrame event="king_reveal" tilt={2} delay={1.2} />
       <Paper>
         <p className="font-ml text-lg">{S.end.last(losers)}</p>
+        <MemeFrame event="last_place" tilt={-2} delay={1.6} className="mt-3" />
         <Button className="mt-3 w-full" onClick={() => setWheel(true)}>{S.end.dare}</Button>
       </Paper>
       <ScoreSheet s={s} />
       <p className="font-ml text-4xl">{S.end.finale}</p>
       <Button onClick={() => send({ type: "PLAY_AGAIN" })}>{S.end.again}</Button>
-      {/* TODO(P3): loser meme + sounds; TODO(P4): ശുഭം end card styling */}
+      {/* TODO(P4): ശുഭം end card styling */}
       {wheel && <DareWheel names={losers} onClose={() => setWheel(false)} />}
     </Screen>
   );

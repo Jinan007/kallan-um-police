@@ -1,8 +1,10 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { unlock } from "./audio/sound";
 import { MOTION } from "./config/motion";
 import { Shake } from "./components/fx/Shake";
-import { MuteToggle } from "./components/layout/MuteToggle";
+import { Controls } from "./components/layout/Controls";
+import { FilmLayer } from "./components/layout/FilmLayer";
+import { preloadMemes } from "./memes/memes";
 import { dealChits } from "./game/deal";
 import { loadState, saveState } from "./game/persist";
 import { reducer } from "./game/reducer";
@@ -22,8 +24,35 @@ const TABLE_PHASES: readonly Phase[] = [
 /** Seed for chit placement: same round and player count always lands the same way. */
 const tableSeed = (s: GameState) => s.round * 100 + s.players.length;
 
+const FILM_KEY = "kallan-um-police:film";
+const readFilm = () => {
+  try {
+    return localStorage.getItem(FILM_KEY) !== "0"; // on unless switched off
+  } catch {
+    return true;
+  }
+};
+
 export default function App() {
   const [s, send] = useReducer(reducer, undefined, loadState);
+  const [film, setFilm] = useState(readFilm);
+  const changeFilm = (on: boolean) => {
+    setFilm(on);
+    try {
+      localStorage.setItem(FILM_KEY, on ? "1" : "0");
+    } catch {
+      /* not persisted */
+    }
+  };
+
+  // Preload the memes for the next moment while the current one is on screen.
+  useEffect(() => {
+    if (s.phase === "SHUFFLE" || s.phase === "PICK" || s.phase === "REVEAL") {
+      preloadMemes(["police_reveal", "caught", "wrong_accuse", "escaped"]);
+    } else if (s.phase === "POLICE_CALL" || s.phase === "ACCUSE" || s.phase === "VERDICT" || s.phase === "SCORE") {
+      preloadMemes(["king_reveal", "last_place"]);
+    }
+  }, [s.phase]);
 
   useEffect(() => saveState(s), [s]);
 
@@ -39,7 +68,8 @@ export default function App() {
 
   return (
     <>
-      <MuteToggle />
+      {film && <FilmLayer />}
+      <Controls film={film} onFilm={changeFilm} />
       {TABLE_PHASES.includes(s.phase) && (
         <Shake className="fixed inset-0 z-0" active={impact} at={impactAt}>
           {/* key: a new round mounts a fresh table so the chits drop in again */}

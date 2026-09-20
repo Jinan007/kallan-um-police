@@ -125,10 +125,22 @@ export const S = {
     kunju: "Kunju",
   } satisfies Record<RoleId, string>,
 
+  memes: {
+    police_reveal: "Sir has arrived!",
+    caught: "Got him, sir!",
+    escaped: "Catch me if you can!",
+    wrong_accuse: "Wrong guess, sir!",
+    king_reveal: "All hail the king!",
+    last_place: "Better luck next time",
+    placeholder: "Meme photo goes here",
+  },
+
   common: {
     points: (n: number) => `${n} points`,
     mute: "Sound off",
     unmute: "Sound on",
+    filmOn: "Turn old-film look on",
+    filmOff: "Turn old-film look off",
   },
 } as const;
 
