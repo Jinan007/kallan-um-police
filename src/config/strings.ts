@@ -16,6 +16,9 @@ export const S = {
     start: "Kali thudangatte!",
     needMore: (min: number) => `You need at least ${min} players`,
     duplicate: "Two players have the same name. Make them different",
+    wheelLabel: "Wheel of dares",
+    wheelHint: "Last place spins it at the end. Make your own dares!",
+    wheelButton: (n: number) => `Edit the wheel (${n} dares)`,
   },
 
   modes: {

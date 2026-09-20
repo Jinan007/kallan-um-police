@@ -93,3 +93,6 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 
 ## Update: no background music (owner)
 - Background music removed entirely (generative tune, `/sfx/bgm.mp3` support, and the tab-hidden suspend hook that only served it). Sound effects and the mute toggle are unchanged. This supersedes the music notes in the P3 and P4 sections above.
+
+## Update: edit the wheel before the game (owner)
+- Setup screen has a "Wheel of dares" card with an "Edit the wheel (N dares)" button. It opens `DareEditorDialog` (same `DareEditor` as the in-game editor, exported from `fx/DareWheel.tsx`). Saves go to localStorage (`kallan-um-police:dares:v1`), so the end-of-game wheel uses them. 3-14 dares, label max 10 chars.

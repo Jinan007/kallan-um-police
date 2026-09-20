@@ -71,7 +71,7 @@ function WheelDisc({ dares }: { dares: readonly Dare[] }) {
 interface Row extends Dare { id: number }
 
 /** Edit the wheel: rename, rewrite, add, remove, reset. Saved to this device. */
-function DareEditor({ dares, onSave, onCancel }: { dares: Dare[]; onSave: (d: Dare[]) => void; onCancel: () => void }) {
+export function DareEditor({ dares, onSave, onCancel }: { dares: Dare[]; onSave: (d: Dare[]) => void; onCancel: () => void }) {
   const nextId = useRef(0);
   const withId = (d: Dare): Row => ({ ...d, id: nextId.current++ });
   const [rows, setRows] = useState<Row[]>(() => dares.map(withId));
@@ -246,6 +246,32 @@ export function DareWheel({ names, onClose }: { names: string; onClose: () => vo
           </div>
         </>
       )}
+    </motion.div>
+  );
+}
+
+/**
+ * The dare editor on its own, for the setup screen: a full-screen dialog that loads the saved
+ * wheel, lets you change it, and saves it to this device when you press Save.
+ */
+export function DareEditorDialog({ onClose }: { onClose: () => void }) {
+  const [dares] = useState<Dare[]>(loadDares);
+  return (
+    <motion.div
+      className="pointer-events-auto fixed inset-0 z-50 flex flex-col items-center overflow-y-auto bg-[#120b05]/97 px-4 pb-6 pt-16 text-center text-paper"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      role="dialog"
+      aria-label={S.end.editHeading}
+    >
+      <DareEditor
+        dares={dares}
+        onSave={(next) => {
+          saveDares(next);
+          onClose();
+        }}
+        onCancel={onClose}
+      />
     </motion.div>
   );
 }

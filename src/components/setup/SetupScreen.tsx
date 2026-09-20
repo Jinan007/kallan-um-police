@@ -2,6 +2,8 @@
 import { DEFAULT_MODE, LIMITS, WRONG_GUESS_MODES } from "../../config/rules";
 import type { WrongGuessMode } from "../../config/rules";
 import { S } from "../../config/strings";
+import { loadDares } from "../../game/dares";
+import { DareEditorDialog } from "../fx/DareWheel";
 import { Button } from "../layout/Button";
 import { Paper, Screen } from "../layout/Screen";
 
@@ -18,6 +20,8 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
   );
   const [rounds, setRounds] = useState(initialRounds || LIMITS.defaultRounds);
   const [mode, setMode] = useState<WrongGuessMode>(initialMode || DEFAULT_MODE);
+  const [editingWheel, setEditingWheel] = useState(false);
+  const [dareCount, setDareCount] = useState(() => loadDares().length);
 
   const trimmed = names.map((n) => n.trim());
   const filled = trimmed.filter(Boolean);
@@ -89,10 +93,27 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
         </div>
       </Paper>
 
+      <Paper>
+        <h2 className="font-display text-xl font-bold">{S.setup.wheelLabel}</h2>
+        <p className="mt-1 font-ml text-sm">{S.setup.wheelHint}</p>
+        <Button variant="ghost" className="mt-3 w-full" onClick={() => setEditingWheel(true)}>
+          {S.setup.wheelButton(dareCount)}
+        </Button>
+      </Paper>
+
+
       {error && <p role="alert" className="font-ml text-[#ff9b93]">{error}</p>}
       <Button disabled={!!error} onClick={() => onStart(trimmed.filter(Boolean), rounds, mode)}>
         {S.setup.start}
       </Button>
+      {editingWheel && (
+        <DareEditorDialog
+          onClose={() => {
+            setDareCount(loadDares().length); // pick up what was just saved
+            setEditingWheel(false);
+          }}
+        />
+      )}
     </Screen>
   );
 }
