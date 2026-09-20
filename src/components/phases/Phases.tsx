@@ -1,4 +1,5 @@
 ﻿import { motion, useReducedMotion } from "motion/react";
+import { play } from "../../audio/sound";
 import { useEffect, useState } from "react";
 import { MOTION } from "../../config/motion";
 import { ROLES, TIMINGS } from "../../config/rules";
@@ -6,13 +7,14 @@ import { S } from "../../config/strings";
 import { policeId, rolesByPlayer, thiefId } from "../../game/reducer";
 import type { GameState } from "../../game/reducer";
 import { winnerIds, lastPlaceIds } from "../../game/scoring";
-import { haptic, useHold } from "../../hooks/useHold";
+import { useHold } from "../../hooks/useHold";
 import { CrumpleOpen } from "../chit/CrumpleOpen";
 import { Badge } from "../fx/Badge";
 import { Celebration } from "../fx/Celebration";
 import { DareWheel } from "../fx/DareWheel";
 import { Shake } from "../fx/Shake";
 import { Stamp } from "../fx/Stamp";
+import { SuspenseOverlay } from "../fx/SuspenseOverlay";
 import { Button } from "../layout/Button";
 import { Paper, Screen } from "../layout/Screen";
 import { ScoreSheet } from "./ScoreSheet";
@@ -67,6 +69,11 @@ export function RevealPhase({ s, send }: P) {
 
 export function PolicePhase({ s, send }: P) {
   const reduced = useReducedMotion();
+  // the badge hits the desk at the end of its slam
+  useEffect(() => {
+    const id = window.setTimeout(() => play("stamp"), MOTION.policeBadge.slamSec * 1000);
+    return () => clearTimeout(id);
+  }, []);
   return (
     <Shake at={MOTION.policeBadge.shakeDelaySec}>
       <Screen tone="table" title={S.policeCall.heading}>
@@ -89,7 +96,6 @@ export function PolicePhase({ s, send }: P) {
 }
 
 export function AccusePhase({ s, send }: P) {
-  const reduced = useReducedMotion();
   const police = policeId(s);
   const [target, setTarget] = useState<number | null>(null);
 
@@ -112,35 +118,7 @@ export function AccusePhase({ s, send }: P) {
         )}
       </div>
 
-      {target !== null && (
-        <motion.div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6"
-          style={{ background: "radial-gradient(circle at 50% 45%, #6b4a22 0, #1a0f06 45%, #060302 80%)" }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          {/* Spotlight: a dim layer with a bright radial hole. The card jitters faster as it swells. */}
-          <motion.div
-            className="paper rounded-lg px-8 py-6 text-center"
-            initial={{ scale: 0.8 }}
-            animate={
-              reduced
-                ? { scale: 1.1 }
-                : { scale: [0.8, 1.25], x: [0, -3, 3, -4, 4, -2, 2, 0] }
-            }
-            transition={{
-              scale: { duration: TIMINGS.suspenseMs / 1000, ease: "easeIn" },
-              x: { duration: MOTION.suspense.jitterSec, repeat: Infinity },
-            }}
-            onAnimationStart={() => haptic(30)}
-          >
-            <p className="font-display text-4xl font-bold">{s.players[target]}</p>
-          </motion.div>
-          <p className="mt-10 font-ml text-xl text-paper">{S.accuse.suspense}</p>
-          {/* TODO(P3): drumroll sound */}
-        </motion.div>
-      )}
+      {target !== null && <SuspenseOverlay name={s.players[target]} ms={TIMINGS.suspenseMs} />}
     </Screen>
   );
 }
@@ -157,6 +135,11 @@ export function VerdictPhase({ s, send }: P) {
     transition: { delay, duration: 0.35 },
   });
   const endAt = st.listDelaySec + s.players.length * st.rowStaggerSec + 0.3;
+  // the stamp hits when its scale reaches 1 (65% of the way through its animation)
+  useEffect(() => {
+    const id = window.setTimeout(() => play("stamp"), st.landSec * 0.65 * 1000);
+    return () => clearTimeout(id);
+  }, [st.landSec]);
   return (
     <Shake at={st.landSec * 0.65}>
       <Screen tone="table">
@@ -255,5 +238,6 @@ export function EndPhase({ s, send }: P) {
     </Screen>
   );
 }
+
 
 

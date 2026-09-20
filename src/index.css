@@ -24,7 +24,7 @@ html, body, #root { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--color-wood-dark);
+  background: #1c1108; /* same as the bottom of the table room, so nothing off-colour shows at the edges in a shake */
   color: var(--color-ink);
   font-family: var(--font-hand);
   -webkit-tap-highlight-color: transparent;

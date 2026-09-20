@@ -63,3 +63,9 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 
 ## Update: no reshuffle between picks (owner)
 - The per-turn gather/shake/scatter was removed. After the initial shuffle the chits stay put between turns (dragged positions persist for the round); only the picked chit leaves. This supersedes the "Per-turn reshuffle" note above.
+
+## Suspense, shake and sound (owner)
+- **Audio engine** (`src/audio/sound.ts`): starts on the first tap. Each sound plays `/public/sfx/<name>.mp3` if that file exists (checked with a HEAD request; the type must be audio, because a missing file often returns index.html with 200), otherwise a synthesized Web Audio stand-in. Names: `shake`, `toss`, `drumroll`, `stamp`. Mute toggle top-right (`MuteToggle`), remembered in localStorage. Still to supply/add: crinkle, whirr, BGM (P3).
+- **Suspense** (`fx/SuspenseOverlay.tsx`, `game/suspense.ts`): `TIMINGS.suspenseMs` is now 2600. A dark tunnel closes in, the card swells and thumps on accelerating heartbeats, jitter grows then stops for the last beat, snare roll + heartbeat sound on the same beat times, text changes twice. Beat times are pure and tested.
+- **Shake corners fix:** the screen scrim extends 40px past the edges (`-inset-10`), the body colour matches the table room, and the table backdrop shakes with the content (`Shake` with `active`), so no gaps appear at the corners.
+- **Shuffle shake:** the pile wobbles as a whole and every ball also spins, hops and jitters out of step (`stage === "shake"` in `Table.tsx`). Sounds: toss on drop, rattle on shake, toss on scatter, stamp on badge slam and verdict.

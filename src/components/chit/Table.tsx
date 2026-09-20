@@ -1,5 +1,6 @@
 import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { play } from "../../audio/sound";
 import { MOTION } from "../../config/motion";
 import type { Phase } from "../../game/reducer";
 import { haptic } from "../../hooks/useHold";
@@ -62,8 +63,8 @@ function TableChit(p: ChitProps) {
 
   useEffect(() => {
     const running: { stop: () => void }[] = [];
-    const go = (mv: typeof x, to: number, t: object) =>
-      running.push(animate(mv, to, reduced ? { duration: 0 } : t));
+    const go = (mv: typeof x, to: number | number[], t: object) =>
+      running.push(animate(mv, to as number, reduced ? { duration: 0 } : t));
     const spring = { type: "spring" as const, stiffness: 420, damping: 24 };
 
     if (taken) {
@@ -76,6 +77,17 @@ function TableChit(p: ChitProps) {
     } else if (stage === "appear") {
       const t = { duration: 0.35, delay: i * 0.05, ease: "easeOut" as const };
       go(x, 0, t); go(y, 0, t); go(opacity, 1, t); go(scale, 1, t); go(rot, slot.rot * 0.35, t);
+    } else if (stage === "shake") {
+      // Every ball is rattled on its own: it spins, jumps and jitters out of step with the
+      // others, while the whole pile shakes as one (see the group below).
+      const d = MOTION.shuffle.shakeMs / 1000;
+      const base = slot.rot * 0.35;
+      const s = i % 2 ? 1 : -1;
+      const t = { duration: d, ease: "easeOut" as const, delay: i * 0.015 };
+      go(rot, [base, base + 26 * s, base - 22 * s, base + 16 * s, base - 12 * s, base + 7 * s, base], t);
+      go(z, [0, 34, 4, 28, 2, 18, 0], t);
+      go(x, [0, 9 * s, -8 * s, 6 * s, -5 * s, 3 * s, 0], t);
+      go(y, [0, -7 * s, 8 * s, -5 * s, 4 * s, -2 * s, 0], t);
     } else if (stage === "scatter") {
       const t = { type: "spring" as const, stiffness: 150, damping: 15, delay: i * 0.04 };
       go(x, slot.x, t); go(y, slot.y, t); go(rot, slot.rot, t); go(scale, 1, t);
@@ -233,9 +245,10 @@ export function Table({ count, seed, owners, phase, pickIdx, onShuffleDone, onPi
         const t = MOTION.shuffle;
         const a = t.appearMs, b = a + t.rollMs, c = b + t.shakeMs, d = c + t.scatterMs;
         setStage("appear");
+        play("toss", { count });
         at(a, () => setStage("roll"));
-        at(b, () => setStage("shake"));
-        at(c, () => setStage("scatter"));
+        at(b, () => { setStage("shake"); play("shake", { duration: t.shakeMs / 1000 }); });
+        at(c, () => { setStage("scatter"); play("toss", { count }); });
         at(d, () => { setStage("table"); done.current(); });
       }
     } else {
@@ -248,6 +261,7 @@ export function Table({ count, seed, owners, phase, pickIdx, onShuffleDone, onPi
   const pick = (slot: number) => {
     if (lifted !== null || !enabled) return;
     setLifted(slot);
+    play("toss", { count: 1 });
     window.setTimeout(() => onPick(slot), reduced ? 0 : MOTION.pickLiftMs);
   };
 
@@ -280,10 +294,14 @@ export function Table({ count, seed, owners, phase, pickIdx, onShuffleDone, onPi
           style={{ transformStyle: "preserve-3d" }}
           animate={
             stage === "shake" && !reduced
-              ? { rotate: [0, -5, 5, -4, 4, -2, 0], x: [0, -8, 8, -6, 6, -2, 0] }
-              : { rotate: 0, x: 0 }
+              ? {
+                  rotate: [0, -6, 6, -5, 5, -3.5, 3.5, -2, 2, -1, 0],
+                  x: [0, -16, 14, -12, 10, -8, 6, -4, 3, -1, 0],
+                  y: [0, 7, -6, 6, -5, 4, -3, 2, -1, 1, 0],
+                }
+              : { rotate: 0, x: 0, y: 0 }
           }
-          transition={{ duration: MOTION.shuffle.shakeMs / 1000, ease: "easeInOut" }}
+          transition={{ duration: MOTION.shuffle.shakeMs / 1000, ease: "easeOut" }}
         >
           {slots.map((slot, i) => (
             <TableChit

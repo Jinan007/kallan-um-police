@@ -1,4 +1,8 @@
 import { useEffect, useReducer } from "react";
+import { unlock } from "./audio/sound";
+import { MOTION } from "./config/motion";
+import { Shake } from "./components/fx/Shake";
+import { MuteToggle } from "./components/layout/MuteToggle";
 import { dealChits } from "./game/deal";
 import { loadState, saveState } from "./game/persist";
 import { reducer } from "./game/reducer";
@@ -23,10 +27,21 @@ export default function App() {
 
   useEffect(() => saveState(s), [s]);
 
+  // Browsers only allow audio after a tap: start the engine on the first one.
+  useEffect(() => {
+    window.addEventListener("pointerdown", unlock, { once: true });
+    return () => window.removeEventListener("pointerdown", unlock);
+  }, []);
+
+  // The whole table jolts on the badge slam and the verdict stamp, in step with the screen.
+  const impact = s.phase === "POLICE_CALL" || s.phase === "VERDICT";
+  const impactAt = s.phase === "POLICE_CALL" ? MOTION.policeBadge.shakeDelaySec : MOTION.stamp.landSec * 0.65;
+
   return (
     <>
+      <MuteToggle />
       {TABLE_PHASES.includes(s.phase) && (
-        <div className="fixed inset-0 z-0">
+        <Shake className="fixed inset-0 z-0" active={impact} at={impactAt}>
           {/* key: a new round mounts a fresh table so the chits drop in again */}
           <Table
             key={s.round}
@@ -38,7 +53,7 @@ export default function App() {
             onShuffleDone={() => send({ type: "SHUFFLE_DONE" })}
             onPick={(slot) => send({ type: "TAP_CHIT", slot })}
           />
-        </div>
+        </Shake>
       )}
       <Phase s={s} send={send} />
     </>

@@ -44,8 +44,9 @@ export const LIMITS = {
 } as const;
 
 export const TIMINGS = {
-  suspenseMs: 1500,
+  suspenseMs: 2600,
 } as const;
 
 export const STORAGE_KEY = "kallan-um-police:v1";
+
 

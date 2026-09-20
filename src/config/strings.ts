@@ -52,7 +52,7 @@ export const S = {
   accuse: {
     heading: (name: string) => `${name} Sir, who is the Kallan?`,
     hint: "Tap the player you suspect",
-    suspense: "Wait for it...",
+    suspenseLines: ["Wait for it...", "Hold your breath...", "And the verdict is..."],
   },
 
   verdict: {
@@ -131,6 +131,7 @@ export const S = {
     unmute: "Sound on",
   },
 } as const;
+
 
 
 
