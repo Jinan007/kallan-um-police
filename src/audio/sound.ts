@@ -6,7 +6,7 @@ import { suspenseBeats } from "../game/suspense";
  * synthesized stand-in built with the Web Audio API, so the game has sound before you supply
  * any files. Nothing plays until the first tap (browsers block audio before a gesture).
  */
-export type SfxName = "shake" | "toss" | "drumroll" | "stamp" | "crinkle" | "whirr";
+export type SfxName = "shake" | "toss" | "drumroll" | "stamp" | "crinkle" | "whirr" | "win" | "spin" | "tick";
 
 const FILES: Record<SfxName, string> = {
   shake: "/sfx/shake.mp3",
@@ -15,6 +15,9 @@ const FILES: Record<SfxName, string> = {
   stamp: "/sfx/stamp.mp3",
   crinkle: "/sfx/crinkle.mp3",
   whirr: "/sfx/whirr.mp3",
+  win: "/sfx/win.mp3",
+  spin: "/sfx/spin.mp3",
+  tick: "/sfx/tick.mp3",
 };
 const BGM_FILE = "/sfx/bgm.mp3";
 
@@ -321,6 +324,77 @@ const synth: Record<SfxName, (o: Out, opts: PlayOptions) => void> = {
     lfo.start(t0);
     src.stop(t0 + duration + 0.05);
     lfo.stop(t0 + duration + 0.05);
+  },
+  /** Victory: a rising brass-style fanfare into a held chord, sparkle on top, then applause. */
+  win(out) {
+    const c = ctx!;
+    const t0 = c.currentTime;
+    const tone = (freq: number, t: number, dur: number, level: number) => {
+      const o = c.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.value = freq;
+      const f = c.createBiquadFilter();
+      f.type = "lowpass";
+      f.frequency.setValueAtTime(700, t);
+      f.frequency.linearRampToValueAtTime(3200, t + 0.08); // the "blat" of a brass attack
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(level, t + 0.03);
+      g.gain.setValueAtTime(level, t + dur * 0.7);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(f).connect(g).connect(out);
+      o.start(t);
+      o.stop(t + dur + 0.02);
+    };
+    // C E G, then a big C major chord
+    [523.25, 659.25, 783.99].forEach((f, i) => tone(f, t0 + i * 0.16, 0.22, 0.13));
+    [523.25, 659.25, 783.99, 1046.5].forEach((f) => tone(f, t0 + 0.5, 1.3, 0.12));
+    // sparkle: quick high notes
+    [2093, 2637, 3136, 4186].forEach((f, i) => {
+      const o = c.createOscillator();
+      o.frequency.value = f;
+      const g = c.createGain();
+      const t = t0 + 0.55 + i * 0.07;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.06, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      o.connect(g).connect(out);
+      o.start(t);
+      o.stop(t + 0.55);
+    });
+    // applause: lots of tiny claps that swell and fade
+    for (let k = 0; k < 90; k++) {
+      const t = 0.55 + Math.random() * 2.4;
+      const swell = Math.sin(((t - 0.55) / 2.4) * Math.PI);
+      burst(out, t0 + t, 0.03, 1800 + Math.random() * 4500, 0.9, 0.05 + 0.13 * swell * Math.random());
+    }
+  },
+  /** Wheel launch: a whoosh that sweeps up in pitch. */
+  spin(out) {
+    const c = ctx!;
+    const t0 = c.currentTime;
+    const src = c.createBufferSource();
+    src.buffer = noise;
+    src.loop = true;
+    const f = c.createBiquadFilter();
+    f.type = "bandpass";
+    f.Q.value = 2.5;
+    f.frequency.setValueAtTime(250, t0);
+    f.frequency.exponentialRampToValueAtTime(2400, t0 + 0.7);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.4, t0 + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.95);
+    src.connect(f).connect(g).connect(out);
+    src.start(t0);
+    src.stop(t0 + 1);
+    thump(out, t0, 200, 90, 0.12, 0.25);
+  },
+  /** The wheel's pointer flicking past a peg: a tiny dry click. */
+  tick(out) {
+    const t0 = ctx!.currentTime;
+    burst(out, t0, 0.022, 2600, 3, 0.5);
+    thump(out, t0, 900, 400, 0.02, 0.12);
   },
   /** Rubber stamp / badge hitting a desk. */
   stamp(out) {

@@ -78,3 +78,7 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 
 ## Update: no meme images (owner)
 - All meme photos were removed from the repo (they showed real people). `MemeFrame` now shows an old-film title card (icon + caption, no photo) when an event folder has no image. Adding your own image to `public/memes/<event>/` still works and is used automatically. `theif.jpg` is gone too. Note: the deleted photos still exist in earlier git commits.
+
+## Update: memes removed, win + spin sounds (owner)
+- **Memes are gone entirely** (component, loader, manifest script, tests, strings, `public/memes`, `predev`/`prebuild` hooks). This supersedes the P3 "Memes" and "no meme images" notes above. Old photos remain in earlier git commits.
+- New sounds: `win` (brass fanfare + applause, plays with the trophy on the end screen), `spin` (whoosh when the wheel launches) and `tick` (a click each time a wedge passes the pointer; driven by the wheel's real angle so it slows with the wheel, capped to one per 35ms). File overrides: `win.mp3`, `spin.mp3`, `tick.mp3` in `public/sfx`.

@@ -1,5 +1,6 @@
 ﻿import { motion, useReducedMotion } from "motion/react";
 import { useEffect } from "react";
+import { play } from "../../audio/sound";
 import { S } from "../../config/strings";
 
 const GOLD = ["#ffd54a", "#ffb300", "#fff2b3", "#e94b3c", "#3b6fd4"];
@@ -95,6 +96,11 @@ function Trophy() {
 export function Celebration({ names }: { names: string }) {
   const reduced = !!useReducedMotion();
   useConfetti(!reduced);
+  // fanfare and applause with the trophy drop (sound plays even with reduced motion)
+  useEffect(() => {
+    const sound = play("win");
+    return () => sound.stop();
+  }, []);
   return (
     <div className="paper relative overflow-hidden rounded-lg px-4 pb-6 pt-8 text-center">
       <Rays reduced={reduced} />

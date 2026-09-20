@@ -11,7 +11,6 @@ import { useHold } from "../../hooks/useHold";
 import { CrumpleOpen } from "../chit/CrumpleOpen";
 import { Badge } from "../fx/Badge";
 import { Celebration } from "../fx/Celebration";
-import { MemeFrame } from "../fx/MemeFrame";
 import { DareWheel } from "../fx/DareWheel";
 import { Shake } from "../fx/Shake";
 import { Stamp } from "../fx/Stamp";
@@ -97,7 +96,6 @@ export function PolicePhase({ s, send }: P) {
             {S.policeCall.isPolice(s.players[policeId(s)])}
           </motion.p>
         </Paper>
-        <MemeFrame event="police_reveal" tilt={-2} delay={MOTION.policeBadge.slamSec + 0.25} />
         <Button onClick={() => send({ type: "CONTINUE" })}>{S.policeCall.next}</Button>
       </Screen>
     </Shake>
@@ -157,15 +155,6 @@ export function VerdictPhase({ s, send }: P) {
           <motion.p className="mt-4 font-ml text-lg" {...fade(st.thiefDelaySec)}>
             {s.correct ? S.verdict.caughtLine(thief) : S.verdict.wrongLine(accused, thief)}
           </motion.p>
-          {s.correct ? (
-            <MemeFrame event="caught" tilt={-2} delay={st.thiefDelaySec + 0.15} className="mt-4" />
-          ) : (
-            // a wrong guess gets two reactions: the police who missed, and the thief who got away
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <MemeFrame event="wrong_accuse" tilt={-3} delay={st.thiefDelaySec + 0.15} className="[&_figcaption]:text-sm" />
-              <MemeFrame event="escaped" tilt={3} delay={st.thiefDelaySec + 0.3} className="[&_figcaption]:text-sm" />
-            </div>
-          )}
         </Paper>
         <Paper style={{ perspective: 700 }}>
           <h2 className="font-display text-lg font-bold">{S.verdict.revealAll}</h2>
@@ -247,10 +236,8 @@ export function EndPhase({ s, send }: P) {
   return (
     <Screen tone="table" title={S.end.heading}>
       <Celebration names={names(winnerIds(s.totals))} />
-      <MemeFrame event="king_reveal" tilt={2} delay={1.2} />
       <Paper>
         <p className="font-ml text-lg">{S.end.last(losers)}</p>
-        <MemeFrame event="last_place" tilt={-2} delay={1.6} className="mt-3" />
         <Button className="mt-3 w-full" onClick={() => setWheel(true)}>{S.end.dare}</Button>
       </Paper>
       <ScoreSheet s={s} />

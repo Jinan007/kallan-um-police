@@ -4,7 +4,6 @@ import { MOTION } from "./config/motion";
 import { Shake } from "./components/fx/Shake";
 import { Controls } from "./components/layout/Controls";
 import { FilmLayer } from "./components/layout/FilmLayer";
-import { preloadMemes } from "./memes/memes";
 import { dealChits } from "./game/deal";
 import { loadState, saveState } from "./game/persist";
 import { reducer } from "./game/reducer";
@@ -45,14 +44,6 @@ export default function App() {
     }
   };
 
-  // Preload the memes for the next moment while the current one is on screen.
-  useEffect(() => {
-    if (s.phase === "SHUFFLE" || s.phase === "PICK" || s.phase === "REVEAL") {
-      preloadMemes(["police_reveal", "caught", "wrong_accuse", "escaped"]);
-    } else if (s.phase === "POLICE_CALL" || s.phase === "ACCUSE" || s.phase === "VERDICT" || s.phase === "SCORE") {
-      preloadMemes(["king_reveal", "last_place"]);
-    }
-  }, [s.phase]);
 
   useEffect(() => saveState(s), [s]);
 

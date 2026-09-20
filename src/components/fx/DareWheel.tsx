@@ -1,5 +1,6 @@
 import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
 import { useRef, useState } from "react";
+import { play } from "../../audio/sound";
 import { DARES, WHEEL_COLORS } from "../../config/dares";
 import type { Dare } from "../../config/dares";
 import { S } from "../../config/strings";
@@ -149,7 +150,25 @@ export function DareWheel({ names, onClose }: { names: string; onClose: () => vo
     const cur = rotation.get();
     const extra = (((-centre - cur) % 360) + 360) % 360;
     setSpinning(true);
+    play("spin");
+    // A click each time a new wedge passes under the pointer. Because it follows the wheel's real
+    // angle, the clicks come fast at first and slow down with the wheel. Capped so a very fast
+    // wheel is a buzz, not a wall of sound.
+    const wedgeAt = (deg: number) => Math.floor(((((-deg) % 360) + 360) % 360) / seg);
+    let lastWedge = wedgeAt(cur);
+    let lastTick = 0;
+    const stopTicks = rotation.on("change", (v) => {
+      const w = wedgeAt(v);
+      if (w === lastWedge) return;
+      lastWedge = w;
+      const now = performance.now();
+      if (now - lastTick > 35) {
+        lastTick = now;
+        play("tick");
+      }
+    });
     animate(rotation, cur + 360 * 5 + extra, reduced ? { duration: 0 } : { duration: 4.8, ease: [0.12, 0.7, 0.14, 1] }).then(() => {
+      stopTicks();
       setSpinning(false);
       setResult(idx);
       haptic(40);
