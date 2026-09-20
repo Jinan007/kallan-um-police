@@ -1,0 +1,48 @@
+﻿@import "tailwindcss";
+@import "@fontsource/baloo-chettan-2/400.css";
+@import "@fontsource/baloo-chettan-2/700.css";
+@import "@fontsource/kalam/400.css";
+@import "@fontsource/kalam/700.css";
+@import "@fontsource/chilanka/400.css";
+
+@theme {
+  --color-sepia: #e6d3aa;
+  --color-sepia-dark: #cdb384;
+  --color-paper: #fbf6e6;
+  --color-rule: #a9c2dc;
+  --color-margin: #d98a8a;
+  --color-ink: #1f3a6e;
+  --color-stamp: #b3261e;
+  --color-wood: #6b4423;
+  --color-wood-dark: #3b2a1a;
+  --font-display: "Baloo Chettan 2", system-ui, sans-serif;
+  --font-hand: "Kalam", cursive;
+  --font-ml: "Chilanka", "Kalam", cursive;
+}
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--color-wood-dark);
+  color: var(--color-ink);
+  font-family: var(--font-hand);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+input { -webkit-user-select: text; user-select: text; font-size: 16px; }
+
+.paper {
+  background-color: var(--color-paper);
+  background-image: linear-gradient(to bottom, transparent 27px, var(--color-rule) 28px);
+  background-size: 100% 28px;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.15), 0 8px 18px rgb(0 0 0 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
