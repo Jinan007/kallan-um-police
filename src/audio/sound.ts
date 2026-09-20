@@ -6,7 +6,7 @@ import { suspenseBeats } from "../game/suspense";
  * synthesized stand-in built with the Web Audio API, so the game has sound before you supply
  * any files. Nothing plays until the first tap (browsers block audio before a gesture).
  */
-export type SfxName = "shake" | "toss" | "drumroll" | "stamp" | "crinkle" | "whirr" | "win" | "spin" | "tick";
+export type SfxName = "shake" | "toss" | "drumroll" | "stamp" | "crinkle" | "whirr" | "win" | "spin" | "tick" | "pen";
 
 const FILES: Record<SfxName, string> = {
   shake: "/sfx/shake.mp3",
@@ -18,6 +18,7 @@ const FILES: Record<SfxName, string> = {
   win: "/sfx/win.mp3",
   spin: "/sfx/spin.mp3",
   tick: "/sfx/tick.mp3",
+  pen: "/sfx/pen.mp3",
 };
 const BGM_FILE = "/sfx/bgm.mp3";
 
@@ -75,73 +76,125 @@ function audio(): AudioContext | null {
 }
 
 // ---------- background music ----------
-// A soft, slow tune in an old-film South Indian mood: a tanpura-like drone plus plucked
-// notes wandering over a raga scale (D E-flat F-sharp G A B-flat C-sharp), with an echo.
-// If /sfx/bgm.mp3 exists it plays that on loop instead.
+// A cheerful, bouncy tune, generated live: a four-chord loop (D - A - Bm - G) at 112 bpm, a
+// plucked marimba-style melody wandering over the D major pentatonic scale (every note sounds
+// good over every chord), a bouncy bass, soft chord pads, a shaker and a light thump on the beat,
+// with a little echo. If /sfx/bgm.mp3 exists it plays that on loop instead.
 
-const RAGA = [0, 1, 4, 5, 7, 8, 11];
+const BPM = 112;
+const STEP = 60 / BPM / 2; // one eighth note, in seconds
+const midi = (m: number) => 440 * 2 ** ((m - 69) / 12);
+// D major pentatonic (D E F# A B) from D4 to D6, as MIDI numbers
+const PENT = [62, 64, 66, 69, 71, 74, 76, 78, 81, 83, 86];
+// chord loop, one bar each: bass root, triad for the pad, and which melody notes are "home" over it
+const BARS = [
+  { root: 38, triad: [62, 66, 69], home: [62, 66, 69, 74, 78, 81] }, // D
+  { root: 45, triad: [61, 64, 69], home: [64, 69, 76, 81, 71] },     // A
+  { root: 47, triad: [62, 66, 71], home: [66, 71, 74, 78, 83] },     // Bm
+  { root: 43, triad: [62, 67, 71], home: [62, 71, 74, 83, 69] },     // G
+];
 let bgmStarted = false;
 let bgmFile: Howl | null = null;
 
 function startGenerativeBgm() {
   const c = ctx!;
   const bus = c.createGain();
-  bus.gain.value = 0.5; // keeps the music well under the effects
+  bus.gain.value = 0.55; // keeps the music under the effects
   bus.connect(master!);
 
-  // echo
+  // a short echo for sparkle
   const delay = c.createDelay(1);
-  delay.delayTime.value = 0.42;
+  delay.delayTime.value = STEP * 3; // dotted-eighth echo: a classic bouncy feel
   const fb = c.createGain();
-  fb.gain.value = 0.38;
+  fb.gain.value = 0.3;
   const damp = c.createBiquadFilter();
   damp.type = "lowpass";
-  damp.frequency.value = 1800;
+  damp.frequency.value = 2600;
   delay.connect(damp).connect(fb).connect(delay);
   damp.connect(bus);
 
-  // drone: root and fifth, slowly breathing
-  for (const [freq, level] of [[73.42, 0.05], [110, 0.035]] as const) {
-    const o = c.createOscillator();
-    o.type = "triangle";
-    o.frequency.value = freq;
-    const g = c.createGain();
-    g.gain.value = level;
-    const lfo = c.createOscillator();
-    lfo.frequency.value = 0.09 + Math.random() * 0.05;
-    const lg = c.createGain();
-    lg.gain.value = level * 0.5;
-    lfo.connect(lg).connect(g.gain);
-    o.connect(g).connect(bus);
-    o.start();
-    lfo.start();
-  }
-
-  let idx = 7;
-  let next = c.currentTime + 0.5;
-  const pluck = (t: number, degree: number) => {
-    const o = c.createOscillator();
-    o.type = "triangle";
-    o.frequency.value = 293.66 * 2 ** (RAGA[degree % 7] / 12) * (degree >= 7 ? 2 : 1);
-    const g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.11, t + 0.015);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
-    o.connect(g);
-    g.connect(bus);
-    g.connect(delay);
-    o.start(t);
-    o.stop(t + 1.5);
-  };
-  window.setInterval(() => {
-    while (next < c.currentTime + 0.8) {
-      if (Math.random() > 0.28) {
-        idx = Math.max(2, Math.min(12, idx + [-2, -1, -1, 0, 1, 1, 2][Math.floor(Math.random() * 7)]));
-        pluck(next, idx);
-      }
-      next += Math.random() < 0.35 ? 0.9 : 0.6;
+  /** One plucked note: a sine plus a quiet octave-up partial that dies fast (marimba-like). */
+  const pluck = (t: number, freq: number, level: number, dur: number, send = true) => {
+    for (const [mult, lv, d] of [[1, level, dur], [2, level * 0.35, dur * 0.4], [4, level * 0.1, dur * 0.2]] as const) {
+      const o = c.createOscillator();
+      o.frequency.value = freq * mult;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(lv, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g);
+      g.connect(bus);
+      if (send) g.connect(delay);
+      o.start(t);
+      o.stop(t + d + 0.05);
     }
-  }, 250);
+  };
+  const pad = (t: number, notes: number[], dur: number) => {
+    for (const n of notes) {
+      const o = c.createOscillator();
+      o.type = "triangle";
+      o.frequency.value = midi(n);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.022, t + 0.08);
+      g.gain.setValueAtTime(0.022, t + dur - 0.25);
+      g.gain.linearRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(bus);
+      o.start(t);
+      o.stop(t + dur + 0.05);
+    }
+  };
+
+  let step = 0;
+  let melody = 6; // index into PENT
+  let next = c.currentTime + 0.4;
+
+  const playStep = (t: number, n: number) => {
+    const bar = BARS[Math.floor(n / 8) % 4];
+    const pos = n % 8;
+
+    if (pos === 0) pad(t, bar.triad, STEP * 8);
+
+    // bouncy bass: root on 1, fifth up on the "and" of 2, root again on 3, octave on the "and" of 4
+    if (pos === 0 || pos === 4) pluck(t, midi(bar.root), 0.2, 0.34, false);
+    if (pos === 3) pluck(t, midi(bar.root + 7), 0.12, 0.22, false);
+    if (pos === 7) pluck(t, midi(bar.root + 12), 0.1, 0.22, false);
+
+    // percussion: a soft thump on 1 and 3, a shaker on every eighth (louder off the beat)
+    if (pos === 0 || pos === 4) {
+      const o = c.createOscillator();
+      o.frequency.setValueAtTime(120, t);
+      o.frequency.exponentialRampToValueAtTime(48, t + 0.1);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.16, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+      o.connect(g).connect(bus);
+      o.start(t);
+      o.stop(t + 0.15);
+    }
+    burst(bus, t, 0.03, 7500, 1.5, pos % 2 ? 0.045 : 0.025);
+
+    // melody: home notes on the strong beats, stepwise wandering in between, a few rests
+    const strong = pos === 0 || pos === 4 || pos === 2 || pos === 6;
+    if (Math.random() < (strong ? 0.85 : 0.6)) {
+      if (strong) {
+        const homeIdx = PENT.map((m, i) => [m, i] as const).filter(([m]) => bar.home.includes(m)).map(([, i]) => i);
+        // move to the nearest home note, so the tune leans into each chord
+        melody = homeIdx.reduce((best, i) => (Math.abs(i - melody) < Math.abs(best - melody) ? i : best), homeIdx[0]);
+      } else {
+        melody += [-2, -1, -1, 1, 1, 2][Math.floor(Math.random() * 6)];
+      }
+      melody = Math.max(2, Math.min(PENT.length - 1, melody));
+      pluck(t, midi(PENT[melody]), strong ? 0.16 : 0.12, 0.5);
+    }
+  };
+
+  window.setInterval(() => {
+    while (next < c.currentTime + 0.6) {
+      playStep(next, step++);
+      next += STEP;
+    }
+  }, 200);
 }
 
 /** Start the background music (once). Safe to call repeatedly. */
@@ -395,6 +448,16 @@ const synth: Record<SfxName, (o: Out, opts: PlayOptions) => void> = {
     const t0 = ctx!.currentTime;
     burst(out, t0, 0.022, 2600, 3, 0.5);
     thump(out, t0, 900, 400, 0.02, 0.12);
+  },
+  /** A pen scratching on paper: fast, uneven, high-pitched scritches over a faint low rub. */
+  pen(out, { duration = 0.6 }) {
+    const t0 = ctx!.currentTime;
+    let t = 0;
+    while (t < duration) {
+      burst(out, t0 + t, 0.02 + Math.random() * 0.02, 5000 + Math.random() * 4000, 1.3, 0.05 + Math.random() * 0.07);
+      t += 0.012 + Math.random() * 0.024;
+    }
+    burst(out, t0, duration, 900, 0.6, 0.05, "lowpass");
   },
   /** Rubber stamp / badge hitting a desk. */
   stamp(out) {

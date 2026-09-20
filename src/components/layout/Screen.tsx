@@ -19,7 +19,7 @@ const pad = "px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(sa
  */
 export function Screen({ children, title, tone = "paper", scrim = "dim" }: ScreenProps) {
   const heading = title && (
-    <h1 className="font-display text-3xl font-bold leading-tight">{title}</h1>
+    <h1 className="px-12 font-display text-3xl font-bold leading-tight">{title}</h1>
   );
 
   if (tone === "table") {

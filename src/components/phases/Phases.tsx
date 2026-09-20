@@ -15,6 +15,7 @@ import { DareWheel } from "../fx/DareWheel";
 import { Shake } from "../fx/Shake";
 import { Stamp } from "../fx/Stamp";
 import { SuspenseOverlay } from "../fx/SuspenseOverlay";
+import { EndCard, IntervalCard } from "../fx/TitleCards";
 import { Button } from "../layout/Button";
 import { Paper, Screen } from "../layout/Screen";
 import { ScoreSheet } from "./ScoreSheet";
@@ -193,8 +194,7 @@ export function ScorePhase({ s, send }: P) {
   const [confirming, setConfirming] = useState(false);
   return (
     <Screen tone="table" title={S.score.heading(s.round)}>
-      {/* TODO(P4): SVG pen-stroke handwriting onto the ruled scoreboard */}
-      <ScoreSheet s={s} />
+      <ScoreSheet s={s} writeNewest />
       <Button onClick={() => send({ type: "CONTINUE" })}>{last ? S.score.finish : S.score.nextRound}</Button>
       {confirming ? (
         <Paper className="text-center">
@@ -211,19 +211,19 @@ export function ScorePhase({ s, send }: P) {
   );
 }
 
-export function IntervalPhase({ onNext }: { onNext: () => void }) {
+export function IntervalPhase({ s, onNext }: { s: GameState; onNext: () => void }) {
   // a projector whirr as the card comes up
   useEffect(() => {
     play("whirr", { duration: 1.4 });
   }, []);
+  const lead = winnerIds(s.totals);
   return (
     <Screen tone="table">
-      {/* TODO(P4): projector-style ഇടവേള title card */}
-      <Paper className="mt-10 text-center">
-        <h1 className="font-ml text-5xl font-bold">{S.interval.heading}</h1>
-        <p className="font-display text-xl">{S.interval.sub}</p>
-        <p className="mt-2">{S.interval.body}</p>
-      </Paper>
+      <IntervalCard
+        leaders={lead.map((i) => s.players[i]).join(", ")}
+        points={Math.max(...s.totals)}
+        roundsLeft={s.totalRounds - s.round}
+      />
       <Button onClick={onNext}>{S.interval.next}</Button>
     </Screen>
   );
@@ -241,9 +241,8 @@ export function EndPhase({ s, send }: P) {
         <Button className="mt-3 w-full" onClick={() => setWheel(true)}>{S.end.dare}</Button>
       </Paper>
       <ScoreSheet s={s} />
-      <p className="font-ml text-4xl">{S.end.finale}</p>
+      <EndCard />
       <Button onClick={() => send({ type: "PLAY_AGAIN" })}>{S.end.again}</Button>
-      {/* TODO(P4): ശുഭം end card styling */}
       {wheel && <DareWheel names={losers} onClose={() => setWheel(false)} />}
     </Screen>
   );

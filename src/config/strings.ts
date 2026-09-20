@@ -66,7 +66,7 @@ export const S = {
   },
 
   score: {
-    heading: (r: number) => `Score after round ${r}`,
+    heading: (r: number) => `Round ${r} score`,
     total: "Total",
     round: "Round",
     nextRound: "Next round",
@@ -82,6 +82,9 @@ export const S = {
     sub: "Intermission",
     body: "Time for a chaya break!",
     next: "Continue",
+    standings: "Leading so far",
+    leading: (names: string, pts: number) => `${names} (${pts})`,
+    roundsLeft: (n: number) => (n === 1 ? "1 round to go" : `${n} rounds to go`),
   },
 
   end: {
@@ -89,6 +92,7 @@ export const S = {
     winner: (names: string) => `Winner: ${names}`,
     last: (names: string) => `Last place: ${names}`,
     finale: "ശുഭം",
+    theEnd: "THE END",
     again: "Veendum kalikkam?",
     dare: "Spin the wheel of dares",
     dareFor: (names: string) => `Dare time for ${names}!`,

@@ -82,3 +82,11 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 ## Update: memes removed, win + spin sounds (owner)
 - **Memes are gone entirely** (component, loader, manifest script, tests, strings, `public/memes`, `predev`/`prebuild` hooks). This supersedes the P3 "Memes" and "no meme images" notes above. Old photos remain in earlier git commits.
 - New sounds: `win` (brass fanfare + applause, plays with the trophy on the end screen), `spin` (whoosh when the wheel launches) and `tick` (a click each time a wedge passes the pointer; driven by the wheel's real angle so it slows with the wheel, capped to one per 35ms). File overrides: `win.mp3`, `spin.mp3`, `tick.mp3` in `public/sfx`.
+
+## P4 (handwriting, interval + end cards) and new music - done
+- **Background music** is now a cheerful major-key tune (D-A-Bm-G loop, 112 bpm, pentatonic marimba melody that leans onto each chord, bouncy bass, pads, shaker, dotted-eighth echo). Replaces the slow raga. Still overridden by `/sfx/bgm.mp3`.
+- **Handwritten scoreboard** (`fx/HandwrittenNumber.tsx`, `fx/glyphs.ts`, `phases/ScoreSheet.tsx`): each digit is one SVG stroke path drawn with Motion's `pathLength`, each nudged by a fixed tilt/baseline offset. On SCORE (`writeNewest`) the newest round's points are written one by one, a bar grows for the total line, then the totals are written, each with a pen-scratch sound (`pen`). Earlier rounds and the END screen show the sheet already written. `pathLength` is the one place we animate a non-transform/opacity property (a small SVG stroke).
+- **Interval** (`fx/TitleCards.tsx` `IntervalCard`): cream title card with a double border, ഇടവേള lettering, animated tea glass, standings ("Leading so far", rounds to go) under a flickering projector beam with drifting dust; whirr sound.
+- **End card** (`EndCard`): ശുഭം stamps in from large when scrolled into view, then a pen-drawn flourish and "THE END". Note: `whileInView` uses `amount: 0.1` because the scaled-up lettering is clipped by the card and never reached 60% visible.
+- Screen titles have `px-12` so they never sit under the top-right buttons. Score heading is now "Round N score".
+- All planned phases (P1-P4) are done. Left: P5 polish only if wanted, README/deploy checks.

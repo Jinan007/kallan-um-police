@@ -102,7 +102,7 @@ function Phase({ s, send }: { s: GameState; send: React.Dispatch<Parameters<type
     case "VERDICT": return <VerdictPhase s={s} send={send} />;
     case "SCORE": return <ScorePhase s={s} send={send} />;
     case "INTERVAL":
-      return <IntervalPhase onNext={() => send({ type: "NEXT_ROUND", chits: dealChits(s.players.length) })} />;
+      return <IntervalPhase s={s} onNext={() => send({ type: "NEXT_ROUND", chits: dealChits(s.players.length) })} />;
     case "END": return <EndPhase s={s} send={send} />;
   }
 }
