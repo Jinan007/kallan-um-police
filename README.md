@@ -89,7 +89,8 @@ check the ringer switch is not on silent.
 
 - **Film look:** grain, vignette, occasional scratch and flicker. The film-strip button (top right) turns it off. With reduced motion on, only the still grain and vignette remain.
 - **Reduced motion:** respected everywhere; animations shorten or switch off.
-- **Installable:** on a phone use the browser menu, "Add to Home screen". PNG app icons are in `public/icons/` (see `CLAUDE.md` for how they were made).
+- **It is an installable app that works offline.** After the first visit a service worker keeps the whole game on the phone, so it plays with no internet. Install it: Android (Chrome) shows an **Install the app** button on the setup screen; on iPhone use Share, then Add to Home Screen. It then opens full screen with its own icon. App icons are in `public/icons/` (see `CLAUDE.md`).
+- **Updates:** a new deploy is downloaded in the background and used the next time the app is opened.
 - **Screen stays awake** during a game on phones that support it.
 - **If something breaks,** a friendly "Start over" card appears instead of a blank screen.
 - Best on a phone in portrait. It works on desktop too, in a narrow centered column.

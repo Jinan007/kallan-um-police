@@ -12,7 +12,8 @@ function useConfetti(enabled: boolean) {
     let stop = false;
     let burst = 0;
     // canvas-confetti is only needed here, so it loads on demand
-    import("canvas-confetti").then(({ default: confetti }) => {
+    // (.catch below: after an app update the old chunk can be gone, and losing confetti is fine)
+    void import("canvas-confetti").then(({ default: confetti }) => {
       if (stop) return;
       const end = Date.now() + 2400;
       const frame = () => {
@@ -26,7 +27,7 @@ function useConfetti(enabled: boolean) {
         () => !stop && confetti({ particleCount: 140, spread: 110, origin: { y: 0.55 }, colors: GOLD, scalar: 1.1 }),
         350,
       );
-    });
+    }).catch(() => undefined);
     return () => {
       stop = true;
       clearTimeout(burst);

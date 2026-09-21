@@ -120,3 +120,10 @@ Pass-and-play paper-chit game (Kerala, 90s film look). Vite + React + TS, Tailwi
 ## App icons (PNG)
 - Sources are vector: `public/favicon.svg` (rounded, transparent corners), `public/icons/maskable.svg` (full-bleed, art kept in the middle 70% for Android masks) and `public/icons/apple.svg` (full-bleed, no transparency, for iOS). The PNGs in `public/icons/` (192, 512, maskable 512, apple-touch 180) were rendered from them with a browser canvas, since the project has no image library. To change the artwork: edit the SVGs, render each to a canvas at the size in its file name, and save the PNGs over the old ones.
 - `manifest.webmanifest` lists the PNGs (`any` and `maskable` as separate entries) and `index.html` links the apple-touch icon.
+
+## Installable offline app (PWA) - done
+- `vite-plugin-pwa` (in `vite.config.ts`) generates `sw.js` (Workbox): precaches every built file (js, css, html, svg, png, woff2; 31 files, about 1.2 MB) on the first visit, `navigateFallback` to index.html, `autoUpdate` with skipWaiting + clientsClaim. `manifest: false` because the manifest is our own `public/manifest.webmanifest` (has `id`, icons incl. maskable). The service worker is only active in the production build, not `npm run dev`.
+- `hooks/useInstall.ts` + an "Get the app" card on the setup screen: Chrome/Android install button (`beforeinstallprompt`), an iPhone Share hint, and an "offline ready" line once the worker controls the page. Hidden when already running as an installed app.
+- Missing `/sfx/*.mp3` HEAD probes just fail offline and fall back to synthesized sounds. `canvas-confetti` import has a `.catch` because after an update its old chunk can be gone.
+- Verified in real headless Edge over CDP: worker activates, 31 files cached, and with the server stopped the game still loads and renders. The Claude desktop browser pane refuses service workers, so it cannot be used for this; use `msedge --remote-debugging-port` + a CDP script (Node 24 has global WebSocket).
+- Not done: native store apps (Android APK via Capacitor + GitHub Actions; iOS needs a Mac and an Apple developer account). This PC has Java 8 only and no Android SDK.

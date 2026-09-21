@@ -3,6 +3,7 @@ import { DEFAULT_MODE, LIMITS, WRONG_GUESS_MODES } from "../../config/rules";
 import type { WrongGuessMode } from "../../config/rules";
 import { S } from "../../config/strings";
 import { loadDares } from "../../game/dares";
+import { useInstall } from "../../hooks/useInstall";
 import { DareEditorDialog } from "../fx/DareWheel";
 import { Button } from "../layout/Button";
 import { Paper, Screen } from "../layout/Screen";
@@ -23,6 +24,7 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
   const [rounds, setRounds] = useState(initialRounds || LIMITS.defaultRounds);
   const [mode, setMode] = useState<WrongGuessMode>(initialMode || DEFAULT_MODE);
   const [editingWheel, setEditingWheel] = useState(false);
+  const install = useInstall();
   const [dareCount, setDareCount] = useState(() => loadDares().length);
 
   const trimmed = names.map((n) => n.trim());
@@ -107,6 +109,19 @@ export function SetupScreen({ initialNames, initialRounds, initialMode, onStart 
           {S.setup.wheelButton(dareCount)}
         </Button>
       </Paper>
+
+      {(install.canPrompt || install.showIosHint || install.offlineReady) && (
+        <Paper>
+          <h2 className="font-display text-xl font-bold">{S.setup.installLabel}</h2>
+          {install.offlineReady && <p className="mt-1 font-ml text-sm">{S.setup.offlineReady}</p>}
+          {install.showIosHint && <p className="mt-1 font-hand text-lg">{S.setup.installIos}</p>}
+          {install.canPrompt && (
+            <Button variant="ghost" className="mt-3 w-full" onClick={() => void install.install()}>
+              {S.setup.installButton}
+            </Button>
+          )}
+        </Paper>
+      )}
 
 
       {error && <p role="alert" className="font-ml text-[#ff9b93]">{error}</p>}

@@ -1,7 +1,10 @@
 {
+  "id": "/",
   "name": "Kallan um Police",
   "short_name": "Kallan um Police",
   "description": "Pass-and-play paper-chit game: shuffle the chits, catch the thief.",
+  "lang": "en",
+  "categories": ["games", "entertainment"],
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
