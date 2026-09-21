@@ -1,0 +1,61 @@
+name: Build Android APK
+
+# Builds the game into an installable Android app (APK) and publishes it as a GitHub Release,
+# so it can be downloaded from the repo's Releases page. Runs on every push to main, or by hand
+# from the Actions tab ("Run workflow").
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create the release
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the web game
+        run: npm run build
+
+      - name: Copy the game into the Android project
+        run: npx cap sync android
+
+      - name: Build the APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk kallan-um-police.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kallan-um-police-apk
+          path: kallan-um-police.apk
+
+      - name: Publish as the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete apk-latest --cleanup-tag --yes || true
+          gh release create apk-latest kallan-um-police.apk \
+            --title "Kallan um Police (Android APK)" \
+            --notes "Debug build of commit ${GITHUB_SHA::7}. Download kallan-um-police.apk on your phone and open it. Android will ask you to allow installing from this source."

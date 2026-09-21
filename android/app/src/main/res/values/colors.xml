@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kallan um Police palette: dark walnut, matching the game's table room. -->
+    <color name="colorPrimary">#3B2A1A</color>
+    <color name="colorPrimaryDark">#1C1108</color>
+    <color name="colorAccent">#B07A44</color>
+    <color name="splash_background">#1C1108</color>
+</resources>

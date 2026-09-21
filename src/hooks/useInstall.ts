@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useCallback, useEffect, useState } from "react";
 
 /** Chrome's "install this app" event (not in the standard TypeScript DOM types). */
@@ -5,7 +6,11 @@ interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
 }
 
+// Running inside the Android app (built with Capacitor): it is already installed and has every file.
+const isNativeApp = () => Capacitor.isNativePlatform();
+
 const isStandalone = () =>
+  isNativeApp() ||
   window.matchMedia?.("(display-mode: standalone)").matches ||
   (navigator as unknown as { standalone?: boolean }).standalone === true;
 
@@ -24,7 +29,7 @@ const isIos = () =>
 export function useInstall() {
   const [event, setEvent] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(isStandalone);
-  const [offlineReady, setOfflineReady] = useState(() => !!navigator.serviceWorker?.controller);
+  const [offlineReady, setOfflineReady] = useState(() => !isNativeApp() && !!navigator.serviceWorker?.controller);
 
   useEffect(() => {
     const onPrompt = (e: Event) => {
@@ -35,7 +40,7 @@ export function useInstall() {
       setInstalled(true);
       setEvent(null);
     };
-    const onController = () => setOfflineReady(true);
+    const onController = () => setOfflineReady(!isNativeApp());
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
     navigator.serviceWorker?.addEventListener("controllerchange", onController);
