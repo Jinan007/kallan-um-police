@@ -31,6 +31,17 @@ npm run dev -- --host   # open the printed Network URL on your phone (same Wi-Fi
 3. Leave the defaults: framework **Vite**, build command `npm run build`, output `dist`.
 4. Deploy. Every push to `main` redeploys automatically.
 
+## Android app (APK)
+
+The game is also packaged as a real Android app with [Capacitor](https://capacitorjs.com). GitHub builds it
+for you (this needs no Android tools on your PC):
+
+- **Download:** https://github.com/Jinan007/kallan-um-police/releases/tag/apk-latest, file `kallan-um-police.apk`.
+- **Install:** open the file on your Android phone. Android asks you to allow installing from that source once; accept. It is a debug-signed build for sharing and testing, not a Play Store release.
+- **Rebuild:** every push to `main` runs the "Build Android APK" workflow (`.github/workflows/android-apk.yml`) and replaces the release. You can also run it by hand from the Actions tab.
+- **Locally (optional):** `npm run build && npx cap sync android`, then open `android/` in Android Studio.
+- iPhone: use the browser install instead (see below). An iPhone app needs a Mac and an Apple developer account.
+
 ## How a round plays
 
 1. **Setup** (first round): enter 4 to 10 names, choose the number of rounds, and optionally edit the wheel of dares.
